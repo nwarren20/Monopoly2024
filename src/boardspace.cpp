@@ -1,4 +1,4 @@
-#include "boardspace.hpp"
+#include "../include/boardspace.hpp"
 #include <iostream>
 
 using namespace std;
@@ -71,7 +71,7 @@ bool Property::DoesOwnerHaveMonopoly(const int playerId)
 {
   bool monopoly = true;
 
-  for (uint i = 0; i < m_group.size(); i++)
+  for (int i = 0; i < m_group.size(); i++)
   {
     bool doesOwn = (m_group[i]->GetOwner() == playerId);
     monopoly &= doesOwn;
@@ -131,7 +131,7 @@ int RailRoad::GetRailroadsOwnedByPlayer(const int ownerId)
 {
     int count = 0;
 
-    for (uint i = 0; i < m_group.size(); i++)
+    for (int i = 0; i < m_group.size(); i++)
     {
       if (m_group[i]->GetOwner() == ownerId)
       {
@@ -188,7 +188,7 @@ bool Utility::DoesPlayerOwnBothUtilities(const int playerId)
 {
   int count = 0;
 
-    for (uint i = 0; i < m_group.size(); i++)
+    for (int i = 0; i < m_group.size(); i++)
     {
       if (m_group[i]->GetOwner() == playerId)
       {

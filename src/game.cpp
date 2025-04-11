@@ -1,11 +1,12 @@
 
 #include <iostream>
-#include "boardspace.hpp"
-#include "player.hpp"
+#include "../include/boardspace.hpp"
+#include "../include/player.hpp"
 #include <vector>
-#include "rents.hpp"
-#include "banker.hpp"
+#include "../include/rents.hpp"
+#include "../include/banker.hpp"
 #include <thread>
+#include <cstdint>
 
 using namespace std;
 
@@ -236,7 +237,7 @@ int main()
 
     LoadBoard(gameBoard, darkPurpleGroup, lightBlueGroup, purpleGroup, orangeGroup, redGroup, yellowGroup, greenGroup, blueGroup, railRoadGroup);
 
-    for (uint i = 0; i < gameBoard.size(); i++)
+    for (uint32_t i = 0; i < gameBoard.size(); i++)
     {
         gameBoard[i]->SetBanker(banker);
     }
@@ -255,6 +256,7 @@ int main()
 
         cout << "=================================\n";
         cout << playerThisTurn->GetName() << " You are currently on " << space << endl;
+        playerThisTurn->PrintBoardPosition();
         playerThisTurn->OutputPlayerStats();
         cout << "==> Enter r to roll dice." << endl;
 
@@ -268,6 +270,9 @@ int main()
           spacesToMove = playerThisTurn->RollDice();
 
           position = playerThisTurn->AdvancePlayer(spacesToMove);
+
+          playerThisTurn->PrintBoardPosition();
+
           space = gameBoard[position]->GetName();
 
           cout << "=============================================\n\n";

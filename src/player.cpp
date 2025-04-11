@@ -1,9 +1,12 @@
-#include "player.hpp"
+#include "../include/player.hpp"
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
 
 using namespace std;
+
+const int drawPositions[40] = 
+{ 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 19, 31, 18, 32, 17, 33, 16, 34, 15, 35, 14, 36, 13, 37, 12, 38, 11, 39, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
 
 Player::Player(const string name, const int playerId)
   : m_name(name),
@@ -177,7 +180,7 @@ void Player::PrintPropertyGroup(string group)
 {
     vector<string> names;
 
-    for (uint i = 0; i < m_properties.size(); i++)
+    for (int i = 0; i < m_properties.size(); i++)
     {
         if (m_properties[i].second.compare(group) == 0)
         {
@@ -189,7 +192,7 @@ void Player::PrintPropertyGroup(string group)
     {
         cout << "   " << group << endl << "     ";
 
-        for (uint i = 0; i < names.size(); i++)
+        for (int i = 0; i < names.size(); i++)
         {
             cout << names[i];
 
@@ -201,4 +204,94 @@ void Player::PrintPropertyGroup(string group)
 
         cout << endl;
     }
+}
+
+void DrawBoardPosition(int & index, const int currentPosition)
+{
+    int position = 40;
+
+    if (index < 40)
+    {
+        position = drawPositions[index];
+    }
+
+    if (position == currentPosition)
+    {
+        cout << "__*__|";
+    }
+    else
+    {
+        cout << "_____|";
+    }
+
+    ++index;
+}
+
+void Player::PrintBoardPosition()
+{
+    
+    int drawIndex = 0;
+
+    cout << endl;
+    cout << "___________________________________________________________________" << endl
+         << "|Free |Kntky| Chn | Ind | ILL | RR  | Atl | Vent| WW  |MarGr| Jail|" << endl << "|";
+
+    for(uint32_t i = 0; i < 11; i++)
+    {
+        DrawBoardPosition(drawIndex, GetPosition());
+    }
+
+    cout << endl << "| NY  |                                                     | Pacf|" << endl << "|";
+    DrawBoardPosition(drawIndex, GetPosition());
+    cout << "                                                     |";
+    DrawBoardPosition(drawIndex, GetPosition());
+
+    cout << endl << "|Tenn |                                                     |  NC |" << endl << "|";
+    DrawBoardPosition(drawIndex, GetPosition());
+    cout << "                                                     |";
+    DrawBoardPosition(drawIndex, GetPosition());
+
+    cout << endl << "| CC  |                                                     |  CC |" << endl << "|";
+    DrawBoardPosition(drawIndex, GetPosition());
+    cout << "                                                     |";
+    DrawBoardPosition(drawIndex, GetPosition());
+
+    cout << endl << "|StJam|                                                     | Penn|" << endl << "|";
+    DrawBoardPosition(drawIndex, GetPosition());
+    cout << "                                                     |";
+    DrawBoardPosition(drawIndex, GetPosition());
+
+    cout << endl << "| RR  |                                                     |  RR |" << endl << "|";
+    DrawBoardPosition(drawIndex, GetPosition());
+    cout << "                                                     |";
+    DrawBoardPosition(drawIndex, GetPosition());
+
+    cout << endl << "| Vir |                                                     | Chn |" << endl << "|";
+    DrawBoardPosition(drawIndex, GetPosition());
+    cout << "                                                     |";
+    DrawBoardPosition(drawIndex, GetPosition());
+
+    cout << endl << "|State|                                                     |ParkP|" << endl << "|";
+    DrawBoardPosition(drawIndex, GetPosition());
+    cout << "                                                     |";
+    DrawBoardPosition(drawIndex, GetPosition());
+         
+    cout << endl << "| EC  |                                                     | LxTx|" << endl << "|";
+    DrawBoardPosition(drawIndex, GetPosition());
+    cout << "                                                     |";
+    DrawBoardPosition(drawIndex, GetPosition());
+
+    cout << endl << "|StCh |                                                     |Board|" << endl << "|";
+    DrawBoardPosition(drawIndex, GetPosition());
+    cout << "_____________________________________________________|";
+    DrawBoardPosition(drawIndex, GetPosition());
+
+    cout << endl << "|Jail |Conn |Verm | Chn |Orien| RR  | InTx|Balt | CC  | Med | GO  |" << endl << "|";
+
+    for(uint32_t i = 0; i < 11; i++)
+    {
+        DrawBoardPosition(drawIndex, GetPosition());
+    }
+
+    cout << endl << endl;
 }

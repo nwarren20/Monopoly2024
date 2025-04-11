@@ -33,6 +33,8 @@ class Player
 
     void PrintPropertyGroup(string group);
 
+    void PrintBoardPosition();
+
     int GetPosition() {
         return m_position;
     }
