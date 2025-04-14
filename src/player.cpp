@@ -1,7 +1,10 @@
 #include "../include/player.hpp"
+#include "../include/boardspace.hpp"
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
+#include <thread>
+#include <chrono>
 
 using namespace std;
 
@@ -14,6 +17,7 @@ Player::Player(const string name, const int playerId)
 {
     m_bankAccount = 1500;
     m_position = 0;
+    m_initial = name.substr(0,1);
 
     srand(time(0));
 }
@@ -28,16 +32,27 @@ int Player::RollDice()
     int low = 1;
     int high = 6;
 
-    int dice_1 = (rand() % high) + low;
-    int dice_2 = (rand() % high) + low;
+    m_rolledDice_1 = (rand() % high) + low;
+    m_rolledDice_2 = (rand() % high) + low;
 
-    int total = (dice_1 + dice_2);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-    cout << m_name << " rolled a " << total << endl;
+    PrintDiceRoll(m_rolledDice_1);
 
-    m_rolledDice = total;
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
-    return total;
+    PrintDiceRoll(m_rolledDice_2);
+
+    cout << m_name << " rolled a " << GetRolledDiceTotal() << endl;
+
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    return GetRolledDiceTotal();
+}
+
+bool Player::RolledDoubles()
+{
+    return (m_rolledDice_1 == m_rolledDice_2);
 }
 
 int Player::AdvancePlayer(int numSpaces)
@@ -53,6 +68,11 @@ int Player::AdvancePlayer(int numSpaces)
     }
 
     return m_position;
+}
+
+void Player::GoToJail()
+{
+    m_position = 10;
 }
 
 bool Player::PayTax(const int fee)
@@ -206,7 +226,7 @@ void Player::PrintPropertyGroup(string group)
     }
 }
 
-void DrawBoardPosition(int & index, const int currentPosition)
+void DrawBoardPosition(vector<BoardSpace *> & board, int & index, const int currentPosition)
 {
     int position = 40;
 
@@ -215,19 +235,55 @@ void DrawBoardPosition(int & index, const int currentPosition)
         position = drawPositions[index];
     }
 
+    // print owner initials
+    {
+        string strInitial = "_";
+        BoardSpaceType type = board[position]->GetType();
+
+        if (type == BoardSpaceType::property)
+        {
+            int owner = reinterpret_cast<Property *>(board[position])->GetOwner();
+            
+            if (owner != -1)
+            {
+                strInitial = reinterpret_cast<Property *>(board[position])->GetOwnerInitial();
+            }
+        }
+        else if (type == BoardSpaceType::railroad)
+        {
+            int owner = reinterpret_cast<RailRoad *>(board[position])->GetOwner();
+            
+            if (owner != -1)
+            {
+                strInitial = reinterpret_cast<RailRoad *>(board[position])->GetOwnerInitial();
+            }
+        }
+        else if (type == BoardSpaceType::utility)
+        {
+            int owner = reinterpret_cast<Utility *>(board[position])->GetOwner();
+            
+            if (owner != -1)
+            {
+                strInitial = reinterpret_cast<Utility *>(board[position])->GetOwnerInitial();
+            }
+        }
+
+        cout << strInitial;
+    }
+
     if (position == currentPosition)
     {
-        cout << "__*__|";
+        cout << "_*__|";
     }
     else
     {
-        cout << "_____|";
+        cout << "____|";
     }
 
     ++index;
 }
 
-void Player::PrintBoardPosition()
+void Player::PrintBoardPosition(vector<BoardSpace *> & board)
 {
     
     int drawIndex = 0;
@@ -238,60 +294,106 @@ void Player::PrintBoardPosition()
 
     for(uint32_t i = 0; i < 11; i++)
     {
-        DrawBoardPosition(drawIndex, GetPosition());
+        DrawBoardPosition(board, drawIndex, GetPosition());
     }
 
     cout << endl << "| NY  |                                                     | Pacf|" << endl << "|";
-    DrawBoardPosition(drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition());
     cout << "                                                     |";
-    DrawBoardPosition(drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition());
 
     cout << endl << "|Tenn |                                                     |  NC |" << endl << "|";
-    DrawBoardPosition(drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition());
     cout << "                                                     |";
-    DrawBoardPosition(drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition());
 
     cout << endl << "| CC  |                                                     |  CC |" << endl << "|";
-    DrawBoardPosition(drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition());
     cout << "                                                     |";
-    DrawBoardPosition(drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition());
 
     cout << endl << "|StJam|                                                     | Penn|" << endl << "|";
-    DrawBoardPosition(drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition());
     cout << "                                                     |";
-    DrawBoardPosition(drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition());
 
     cout << endl << "| RR  |                                                     |  RR |" << endl << "|";
-    DrawBoardPosition(drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition());
     cout << "                                                     |";
-    DrawBoardPosition(drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition());
 
     cout << endl << "| Vir |                                                     | Chn |" << endl << "|";
-    DrawBoardPosition(drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition());
     cout << "                                                     |";
-    DrawBoardPosition(drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition());
 
     cout << endl << "|State|                                                     |ParkP|" << endl << "|";
-    DrawBoardPosition(drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition());
     cout << "                                                     |";
-    DrawBoardPosition(drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition());
          
     cout << endl << "| EC  |                                                     | LxTx|" << endl << "|";
-    DrawBoardPosition(drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition());
     cout << "                                                     |";
-    DrawBoardPosition(drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition());
 
     cout << endl << "|StCh |                                                     |Board|" << endl << "|";
-    DrawBoardPosition(drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition());
     cout << "_____________________________________________________|";
-    DrawBoardPosition(drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition());
 
     cout << endl << "|Jail |Conn |Verm | Chn |Orien| RR  | InTx|Balt | CC  | Med | GO  |" << endl << "|";
 
     for(uint32_t i = 0; i < 11; i++)
     {
-        DrawBoardPosition(drawIndex, GetPosition());
+        DrawBoardPosition(board, drawIndex, GetPosition());
     }
 
     cout << endl << endl;
+}
+
+void Player::PrintDiceRoll(int roll)
+{
+    if (roll == 1)
+    {
+        cout << "_________" << endl
+             << "|       |" << endl
+             << "|   *   |" << endl
+             << "|_______|" << endl;
+    }
+    else if (roll == 2)
+    {
+        cout << "_________" << endl
+             << "|     * |" << endl
+             << "|       |" << endl
+             << "|_*_____|" << endl;
+    }
+    else if (roll == 3)
+    {
+        cout << "_________" << endl
+             << "|     * |" << endl
+             << "|   *   |" << endl
+             << "|_*_____|" << endl;
+    }
+    else if (roll == 4)
+    {
+        cout << "_________" << endl
+             << "| *   * |" << endl
+             << "|       |" << endl
+             << "|_*___*_|" << endl;
+    }
+    else if (roll == 5)
+    {
+        cout << "_________" << endl
+             << "| *   * |" << endl
+             << "|   *   |" << endl
+             << "|_*___*_|" << endl;
+    }
+    else if (roll ==6)
+    {
+        cout << "_________" << endl
+             << "| *   * |" << endl
+             << "| *   * |" << endl
+             << "|_*___*_|" << endl;
+    }
 }

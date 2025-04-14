@@ -224,12 +224,24 @@ int Banker::GetPlayerActiveIndex(const int playerId)
 
 string Banker::GetPlayerName(const int playerId)
 {
-    string name;
+    string name("");
 
-    if (playerId < m_allPlayers.size())
+    if (playerId >= 0 && playerId < m_allPlayers.size())
     {
         name = m_allPlayers[playerId]->GetName();
     }
 
     return name;
+}
+
+string Banker::GetPlayerInitial(const int playerId)
+{
+    string initial("");
+
+    if (playerId >= 0 && playerId < m_allPlayers.size())
+    {
+        initial = m_allPlayers[playerId]->GetInitial();
+    }
+
+    return initial;
 }

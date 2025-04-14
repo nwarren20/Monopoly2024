@@ -40,12 +40,12 @@ class BoardSpace
     }
 
     BoardSpaceType GetType() {
-      return type;
+      return m_type;
     }
 
   private:
 
-    BoardSpaceType type;
+    BoardSpaceType m_type;
     string m_name;
     int m_position;
     Banker * m_banker;
@@ -74,6 +74,16 @@ class Property : public BoardSpace
 
     int GetOwner() {
       return m_owner;
+    }
+
+    string GetOwnerInitial()
+    {
+      if (m_owner != -1)
+      {
+        return GetBanker()->GetPlayerInitial(m_owner);
+      }
+
+      return string("");
     }
 
   private:
@@ -110,6 +120,16 @@ class RailRoad : public BoardSpace
       return m_owner;
     }
 
+    string GetOwnerInitial()
+    {
+      if (m_owner != -1)
+      {
+        return GetBanker()->GetPlayerInitial(m_owner);
+      }
+
+      return string("");
+    }
+
   private:
     
     int m_owner;
@@ -129,6 +149,16 @@ class Utility : public BoardSpace
 
     int GetOwner() {
       return m_owner;
+    }
+
+    string GetOwnerInitial()
+    {
+      if (m_owner != -1)
+      {
+        return GetBanker()->GetPlayerInitial(m_owner);
+      }
+
+      return string("");
     }
 
     void SetGroup(vector<Utility *> & group) {

@@ -29,6 +29,8 @@ class Banker
 
     string GetPlayerName(const int playerId);
 
+    string GetPlayerInitial(const int playerId);
+
     int GetNumActivePlayers();
 
     bool DoesPlayerOwnMonopoly(Player * player, string group);

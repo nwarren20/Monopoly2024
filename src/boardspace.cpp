@@ -9,7 +9,8 @@ void TestFunction(const int money)
 }
 
 BoardSpace::BoardSpace(BoardSpaceType type, string name, const int position)
- : m_name(name),
+ : m_type(type),
+   m_name(name),
    m_position(position)
 {
 
@@ -180,7 +181,7 @@ void Utility::HandlePlayerVisit(Player * player)
   {
     bool ownsBoth = DoesPlayerOwnBothUtilities(m_owner);
 
-    GetBanker()->UtilityTransaction(player->GetPlayerId(), m_owner, player->GetRolledDice(), ownsBoth);
+    GetBanker()->UtilityTransaction(player->GetPlayerId(), m_owner, player->GetRolledDiceTotal(), ownsBoth);
   }
 }
 

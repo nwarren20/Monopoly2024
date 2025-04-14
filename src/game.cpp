@@ -194,6 +194,16 @@ void LoadBoard(vector<BoardSpace *> & gameBoard, vector<Property *> & darkPurple
     gameBoard.push_back( blueGroup[1] );
 }
 
+void OutputMessage(string message)
+{
+    cout << "=============================================\n\n";
+
+    cout << message << endl << endl;
+
+    cout << "=============================================\n\n";
+
+}
+
 int main()
 {
     cout << "Welcome to MONOPOLY!\n";
@@ -249,39 +259,103 @@ int main()
 
     while (!gameOver)
     {
+        bool turnOver = false;
+
         Player * playerThisTurn = banker->GetActivePlayerForTurn(turn);
 
-        int position = playerThisTurn->GetPosition();
-        string space = gameBoard[position]->GetName();
-
-        cout << "=================================\n";
-        cout << playerThisTurn->GetName() << " You are currently on " << space << endl;
-        playerThisTurn->PrintBoardPosition();
-        playerThisTurn->OutputPlayerStats();
-        cout << "==> Enter r to roll dice." << endl;
-
-        string input;
-        cin >> input;
-
-        int spacesToMove = 0;
-
-        if (input.compare("r") == 0)
+        while (!turnOver)
         {
-          spacesToMove = playerThisTurn->RollDice();
+            int rolledDoublesCount = 0;
 
-          position = playerThisTurn->AdvancePlayer(spacesToMove);
+            int position = playerThisTurn->GetPosition();
+            string space = gameBoard[position]->GetName();
 
-          playerThisTurn->PrintBoardPosition();
+            playerThisTurn->PrintBoardPosition(gameBoard);
 
-          space = gameBoard[position]->GetName();
+            cout << "=================================\n";
+            cout << playerThisTurn->GetName() << " You are currently on " << space << endl;
+            playerThisTurn->OutputPlayerStats();
 
-          cout << "=============================================\n\n";
+            // Give play options
+            cout << "==> Enter r to roll dice." << endl;
+            cout << "==> Enter t to trade." << endl;
 
-          cout << " You landed on " << space << endl << endl;
+            if (playerThisTurn->OwnsProperty())
+            {
+                cout << "==> Enter m to mortgage." << endl;
 
-          cout << "=============================================\n\n";
+                if (playerThisTurn->OwnsMonopoly())
+                {
+                    cout << "==> Enter b to buy houses/hotels" << endl;
+                }
+            }
 
-          gameBoard[position]->HandlePlayerVisit(playerThisTurn);
+            string input;
+            cin >> input;
+
+            int spacesToMove = 0;
+
+            if (input.compare("r") == 0)
+            {
+                spacesToMove = playerThisTurn->RollDice();
+
+                position = playerThisTurn->AdvancePlayer(spacesToMove);
+
+                playerThisTurn->PrintBoardPosition(gameBoard);
+
+                space = gameBoard[position]->GetName();
+
+                OutputMessage("You landed on " + space);
+
+                gameBoard[position]->HandlePlayerVisit(playerThisTurn);
+
+                if (playerThisTurn->RolledDoubles())
+                {
+                    rolledDoublesCount++;
+
+                    if (rolledDoublesCount >= 3)
+                    {
+                        playerThisTurn->GoToJail();
+                        turnOver = true;
+                        OutputMessage(" Rolled doubles 3 times, go to jail!");
+                    }
+                    else
+                    {
+                        OutputMessage(" You rolled doubles, roll again");
+                    }
+                }
+                else
+                {
+                    turnOver = true;
+                }
+
+            }
+            else if (input.compare("t") == 0)
+            {
+                OutputMessage("Not implemented yet");
+            }
+            else if (input.compare("m") == 0)
+            {
+                if (playerThisTurn->OwnsProperty())
+                {
+                    OutputMessage("Not implemented yet");
+                }
+                else
+                {
+                    OutputMessage("must own property to mortgage");
+                }
+            }
+            else if (input.compare("b") == 0)
+            {
+                if (playerThisTurn->OwnsMonopoly())
+                {
+                    OutputMessage("Not implemented yet");
+                }
+                else
+                {
+                    OutputMessage("must own monopoly to buy houses/hotels!");
+                }
+            }
         }
 
         playerThisTurn->OutputPlayerStats();
@@ -289,10 +363,14 @@ int main()
         string done;
         cin >> done;
 
-        if (done.compare("f") != 0)
+        if (done.compare("f") == 0)
         {
-          cout << "Game Over" << endl;
-          gameOver = true;
+            turnOver = true;
+        }
+        else if (done.compare("a") != 0)
+        {
+            cout << "Game Over" << endl;
+            gameOver = true;
         }
 
         turn = (turn + 1) % banker->GetNumActivePlayers();

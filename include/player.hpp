@@ -5,6 +5,8 @@
 
 using namespace std;
 
+class BoardSpace;
+
 class Player
 {
   public:
@@ -12,11 +14,16 @@ class Player
     ~Player();
 
     int RollDice();
-    int GetRolledDice() {
-        return m_rolledDice;
+
+    int GetRolledDiceTotal() {
+        return m_rolledDice_1 + m_rolledDice_2;
     }
 
+    bool RolledDoubles();
+
     int AdvancePlayer(int numSpaces);
+
+    void GoToJail();
 
     bool BuyProperty(int cost, string prop, string group);
 
@@ -33,7 +40,9 @@ class Player
 
     void PrintPropertyGroup(string group);
 
-    void PrintBoardPosition();
+    void PrintBoardPosition(vector<BoardSpace *> & board);
+
+    void PrintDiceRoll(int roll);
 
     int GetPosition() {
         return m_position;
@@ -47,11 +56,25 @@ class Player
         return m_playerId;
     }
 
+    string GetInitial() {
+        return m_initial;
+    }
+
+    bool OwnsProperty() {
+        return !m_properties.empty();
+    }
+
+    bool OwnsMonopoly() {
+        return false;
+    }
+
   private:
     int m_playerId;
     string m_name;
+    string m_initial;
     int m_bankAccount;
     int m_position;
-    int m_rolledDice;
+    int m_rolledDice_1;
+    int m_rolledDice_2;
     vector<pair<string, string> > m_properties;
 };
