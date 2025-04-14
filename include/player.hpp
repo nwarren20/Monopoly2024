@@ -24,6 +24,10 @@ class Player
     int AdvancePlayer(int numSpaces);
 
     void GoToJail();
+    bool GetOutOfJail(const int price);
+    int GetJailRolls() {
+        return m_jailRolls;
+    }
 
     bool BuyProperty(int cost, string prop, string group);
 
@@ -43,6 +47,8 @@ class Player
     void PrintBoardPosition(vector<BoardSpace *> & board);
 
     void PrintDiceRoll(int roll);
+
+    int Liquidate(const int target);
 
     int GetPosition() {
         return m_position;
@@ -68,6 +74,14 @@ class Player
         return false;
     }
 
+    bool IsJailed() {
+        return (m_jailRolls > 0);
+    }
+
+    int GetCash() {
+        return m_bankAccount;
+    }
+
   private:
     int m_playerId;
     string m_name;
@@ -76,5 +90,6 @@ class Player
     int m_position;
     int m_rolledDice_1;
     int m_rolledDice_2;
+    int m_jailRolls;
     vector<pair<string, string> > m_properties;
 };

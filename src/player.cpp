@@ -18,6 +18,9 @@ Player::Player(const string name, const int playerId)
     m_bankAccount = 1500;
     m_position = 0;
     m_initial = name.substr(0,1);
+    m_jailRolls = 0;
+    m_rolledDice_1 = 0;
+    m_rolledDice_2 = 0;
 
     srand(time(0));
 }
@@ -47,6 +50,11 @@ int Player::RollDice()
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
+    if (m_jailRolls > 0)
+    {
+        m_jailRolls--;
+    }
+
     return GetRolledDiceTotal();
 }
 
@@ -65,6 +73,8 @@ int Player::AdvancePlayer(int numSpaces)
         m_position -= 40;
 
         cout << " YOU PASSED GO! COLLECT $200" << endl;
+
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
     return m_position;
@@ -73,6 +83,27 @@ int Player::AdvancePlayer(int numSpaces)
 void Player::GoToJail()
 {
     m_position = 10;
+    m_jailRolls = 3;
+}
+
+bool Player::GetOutOfJail(const int price)
+{
+    bool success = false;
+
+    if (m_bankAccount >= price)
+    {
+        m_bankAccount -= price;
+        m_jailRolls = 0;
+        success = true;
+    }
+    else
+    {
+        cout << " *** You do not have enough money to get out of jail!" << endl;
+
+        // TODO: Make player come up with money.
+    }
+
+    return success;
 }
 
 bool Player::PayTax(const int fee)
@@ -153,20 +184,49 @@ bool Player::BuyProperty(int cost, string prop, string group)
 int Player::PayRent(const int amount)
 {
     int paid = 0;
+    bool finished = false;
 
-    if (amount <= m_bankAccount)
+    while(!finished)
     {
-        paid = amount;
-    }
-    else
-    {
-        // Todo: make player come up with money.
-        paid = m_bankAccount;
-    }
+        cout << "Enter 'p' to pay rent\n"
+             << "Enter 'd' to make deal\n";
 
-    m_bankAccount -= paid;
+        string input;
+        cin >> input;
+
+        if (input.compare("p") == 0)
+        {
+            if (amount <= m_bankAccount)
+            {
+                paid = amount;
+            }
+            else
+            {
+                paid = Liquidate(amount);
+            }
+
+            m_bankAccount -= paid;
+            finished = true;
+        }
+        else if (input.compare("d") == 0)
+        {
+            cout << " deal feature not yet implemented\n";
+        }
+    }
 
     return paid;
+}
+
+int Player::Liquidate(const int target)
+{
+    cout << "you do not have enought cash pay rent, you must liquidate assets for $" << target << endl;
+
+    //while (m_bankAccount < target)
+    {
+        // Mortgage / Sell houses / trade
+    }
+
+    return m_bankAccount;
 }
     
 void Player::CollectRent(const int amount)

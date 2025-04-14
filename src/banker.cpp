@@ -79,7 +79,7 @@ Player * Banker::GetActivePlayerForTurn(const int turn)
     return nullptr;
 }
 
-void Banker::UtilityTransaction(const int customerId, const int ownerId, const int diceRoll, const int utilitiesOwned)
+void Banker::UtilityTransaction(const int customerId, const int ownerId, const int diceRoll, const int bothUtilitiesOwned)
 {
     Player * customer = m_allPlayers[customerId];
     Player * owner = m_allPlayers[ownerId];
@@ -88,7 +88,7 @@ void Banker::UtilityTransaction(const int customerId, const int ownerId, const i
 
     cout << "Property is owned by " << owner->GetName() << endl;
 
-    if (utilitiesOwned == 2)
+    if (bothUtilitiesOwned)
     {
         bill = diceRoll * 10;
         cout << owner->GetName() << " owns both utilities, your bill is tens times the amount on the dice: $" << bill << endl;

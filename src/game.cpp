@@ -6,6 +6,7 @@
 #include "../include/rents.hpp"
 #include "../include/banker.hpp"
 #include <thread>
+#include <chrono>
 #include <cstdint>
 
 using namespace std;
@@ -160,7 +161,7 @@ void LoadBoard(vector<BoardSpace *> & gameBoard, vector<Property *> & darkPurple
     gameBoard.push_back( lightBlueGroup[1] );
     gameBoard.push_back( lightBlueGroup[2] );
 
-    gameBoard.push_back( new Jail("Jail", 10) );
+    gameBoard.push_back( new Jail("Jail/JustVisiting", 10) );
     gameBoard.push_back( purpleGroup[0] );
     gameBoard.push_back( new Utility("Electric Company", 12) );
     gameBoard.push_back( purpleGroup[1] );
@@ -263,9 +264,11 @@ int main()
 
         Player * playerThisTurn = banker->GetActivePlayerForTurn(turn);
 
+        int rolledDoublesCount = 0;
+
         while (!turnOver)
         {
-            int rolledDoublesCount = 0;
+            bool playerJailed = playerThisTurn->IsJailed();
 
             int position = playerThisTurn->GetPosition();
             string space = gameBoard[position]->GetName();
@@ -275,6 +278,28 @@ int main()
             cout << "=================================\n";
             cout << playerThisTurn->GetName() << " You are currently on " << space << endl;
             playerThisTurn->OutputPlayerStats();
+
+            if (playerJailed)
+            {
+                string message = string("You're currently serving time, pay $50 to get out, or roll doubles");
+
+                if (playerThisTurn->GetJailRolls() == 3)
+                {
+                    message += string("\nThis is your first attempt");
+                }
+                else if (playerThisTurn->GetJailRolls() == 2)
+                {
+                    message += string("\nThis is your second attempt");
+                }
+                else if (playerThisTurn->GetJailRolls() == 1)
+                {
+                    message += string("\nThis is your last attempt");
+                }
+                
+                OutputMessage(message);
+
+                cout << "==> Enter p to pay $50 to get out of jail." << endl;
+            }
 
             // Give play options
             cout << "==> Enter r to roll dice." << endl;
@@ -299,17 +324,50 @@ int main()
             {
                 spacesToMove = playerThisTurn->RollDice();
 
+                if (playerJailed)
+                {
+                    if (playerThisTurn->RolledDoubles())
+                    {
+                        OutputMessage("You got out of jail!");
+                        playerJailed = !playerThisTurn->GetOutOfJail(0);
+
+                        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                        
+                    }
+                    else if (playerThisTurn->GetJailRolls() == 0)
+                    {
+                        OutputMessage("Third roll, you must pay $50 to leave jail.");
+                        playerJailed = !playerThisTurn->GetOutOfJail(50);
+
+                        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                    }
+                    else
+                    {
+                        OutputMessage("You did not get out of jail!");
+
+                        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                    }
+                }
+
+                if (playerJailed)
+                {
+                    turnOver = true;
+                    continue;
+                }
+
                 position = playerThisTurn->AdvancePlayer(spacesToMove);
 
                 playerThisTurn->PrintBoardPosition(gameBoard);
 
                 space = gameBoard[position]->GetName();
 
-                OutputMessage("You landed on " + space);
+                OutputMessage(playerThisTurn->GetName() + " landed on " + space);
+
+                std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
                 gameBoard[position]->HandlePlayerVisit(playerThisTurn);
 
-                if (playerThisTurn->RolledDoubles())
+                if (!playerThisTurn->IsJailed() && playerThisTurn->RolledDoubles())
                 {
                     rolledDoublesCount++;
 
@@ -318,14 +376,20 @@ int main()
                         playerThisTurn->GoToJail();
                         turnOver = true;
                         OutputMessage(" Rolled doubles 3 times, go to jail!");
+                        rolledDoublesCount = 0;
+
+                        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
                     }
                     else
                     {
                         OutputMessage(" You rolled doubles, roll again");
+
+                        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
                     }
                 }
                 else
                 {
+                    rolledDoublesCount = 0;
                     turnOver = true;
                 }
 
@@ -356,21 +420,38 @@ int main()
                     OutputMessage("must own monopoly to buy houses/hotels!");
                 }
             }
+            else if (playerJailed && input.compare("p") == 0)
+            {
+                playerThisTurn->GetOutOfJail(50);
+            }
+            else
+            {
+                OutputMessage(string("Invalid Entry: " + input));
+            }
         }
 
         playerThisTurn->OutputPlayerStats();
-        cout << "Your turn is finished, enter f" << endl;
-        string done;
-        cin >> done;
+        
+        bool validInput = false;
 
-        if (done.compare("f") == 0)
+        while (!validInput)
         {
-            turnOver = true;
-        }
-        else if (done.compare("a") != 0)
-        {
-            cout << "Game Over" << endl;
-            gameOver = true;
+            cout << "Your turn is finished, enter 'f'                                                      enter 'q' to quit game" << endl;
+            string done;
+            cin >> done;
+
+            if (done.compare("f") == 0)
+            {
+                turnOver = true;
+                validInput = true;
+            }
+            else if (done.compare("q") == 0)
+            {
+                cout << "Game Over" << endl;
+                turnOver = true;
+                gameOver = true;
+                validInput = true;
+            }
         }
 
         turn = (turn + 1) % banker->GetNumActivePlayers();

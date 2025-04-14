@@ -41,7 +41,7 @@ void Property::HandlePlayerVisit(Player * player)
 {
   if (m_owner == -1)
   {
-    cout << GetName() << " is for sale at the low price of $" << m_purchasePrice << ", would you like to buy? y/n" << endl;
+    cout << GetName() << " is for sale at the low price of $" << m_purchasePrice << ", your currently have $" << player->GetCash() << " cash, would you like to buy? y/n" << endl;
     string buy;
     cin >> buy;
 
@@ -101,7 +101,8 @@ void RailRoad::HandlePlayerVisit(Player * player)
 {
   if (m_owner == -1)
   {
-    cout << "Railroads for sale, get'em while they're hot! buy? y/n" << endl;
+    cout << "Railroads for sale $200, get'em while they're hot! buy? y/n" << endl;
+    cout << " you have $" << player->GetCash() << " cash" << endl;
     string buy;
     cin >> buy;
 
@@ -158,7 +159,8 @@ void Utility::HandlePlayerVisit(Player * player)
 {
   if (m_owner == -1)
   {
-    cout << "psss... I have a utility in my pocket, you wanna buy? y/n" << endl;
+    cout << "psss... I have a utility in my pocket, you wanna buy for $150? y/n" << endl;
+    cout << " you have $" << player->GetCash() << " cash" << endl;
     string buy;
     cin >> buy;
 
@@ -261,5 +263,13 @@ Jail::~Jail()
 
 void Jail::HandlePlayerVisit(Player * player)
 {
-
+  if (GetPosition() == 30)
+  {
+    cout << "GO TO JAIL, do not collect $200" << endl;
+    player->GoToJail();
+  }
+  else
+  {
+    cout << "Just Visitin" << endl;
+  }
 }

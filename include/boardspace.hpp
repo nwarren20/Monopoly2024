@@ -43,6 +43,10 @@ class BoardSpace
       return m_type;
     }
 
+    int GetPosition() {
+      return m_position;
+    }
+
   private:
 
     BoardSpaceType m_type;
