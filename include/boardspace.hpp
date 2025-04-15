@@ -4,6 +4,7 @@
 #include <vector>
 #include "player.hpp"
 #include "banker.hpp"
+#include "carddeck.hpp"
 
 using namespace std;
 
@@ -179,14 +180,16 @@ class Utility : public BoardSpace
 class TakeCard : public BoardSpace
 {
   public:
-    TakeCard(const string name, const int position, vector<int> * cardStack);
+    TakeCard(const string name, const int position, CardDeck * cardStack);
     ~TakeCard();
 
     void HandlePlayerVisit(Player * player);
 
+    void PerformCard(Player * player, Card card);
+
   private:
 
-    vector<int> * m_cardStack;
+    CardDeck * m_cardStack;
 };
 
 class Tax : public BoardSpace

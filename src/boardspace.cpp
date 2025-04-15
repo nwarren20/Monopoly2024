@@ -117,7 +117,7 @@ void RailRoad::HandlePlayerVisit(Player * player)
       if (success)
       {
         m_owner = player->GetPlayerId();
-        MonopolyUtils::OutputMessage(" Congradulations! you purchased " + GetName(), 1000);
+        MonopolyUtils::OutputMessage(" Congratulations! you purchased " + GetName(), 1000);
       }
     }
   }
@@ -175,7 +175,7 @@ void Utility::HandlePlayerVisit(Player * player)
       if (success)
       {
         m_owner = player->GetPlayerId();
-        MonopolyUtils::OutputMessage(" Congradulations! you purchased " + GetName(), 1000);
+        MonopolyUtils::OutputMessage(" Congratulations! you purchased " + GetName(), 1000);
       }
     }
   }
@@ -206,7 +206,7 @@ bool Utility::DoesPlayerOwnBothUtilities(const int playerId)
     return (count == 2);
 }
 
-TakeCard::TakeCard(const string name, const int position, vector<int> * cardStack)
+TakeCard::TakeCard(const string name, const int position, CardDeck * cardStack)
   : BoardSpace(takecare, name, position),
     m_cardStack(cardStack)
 {
@@ -220,7 +220,47 @@ TakeCard::~TakeCard()
 
 void TakeCard::HandlePlayerVisit(Player * player)
 {
+    if (GetName().compare("Chance") == 0)
+    {
+      Card picked = m_cardStack->PickupChanceCard();
 
+      PerformCard(player, picked);
+    }
+    else if (GetName().compare("Community Chest") == 0)
+    {
+      Card picked = m_cardStack->PickupCommunityChestCard();
+
+      PerformCard(player, picked);
+    }
+}
+
+void TakeCard::PerformCard(Player * player, Card card)
+{
+  MonopolyUtils::OutputMessage(card.text, 4000);
+
+  if (card.transaction != 0)
+  {
+    player->CardTransaction(card.transaction);
+  }
+
+  if (card.moveTo != -1)
+  {
+    player->MoveToSpace(card.moveTo);
+
+    if (card.moveTo == 10)
+    {
+      player->GoToJail();
+    }
+    else if (card.moveTo == 0)
+    {
+      player->PassGo();
+    }
+  }
+
+  if (card.moveRelative != 0)
+  {
+    player->AdvancePlayer(card.moveRelative);
+  }
 }
 
 Tax::Tax(const string name, const int position, const int taxAmount)

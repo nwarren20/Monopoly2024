@@ -35,6 +35,8 @@ class Banker
 
     bool DoesPlayerOwnMonopoly(Player * player, string group);
 
+    void GivePlayOptions(Player * player);
+
   private:
 
     int GetPlayerActiveIndex(const int playerId);

@@ -21,10 +21,18 @@ class Player
 
     bool RolledDoubles();
 
+    bool WasDoublesRolledThreeTimes();
+
     int AdvancePlayer(int numSpaces);
 
+    void MoveToSpace(int space);
+
+    void PassGo();
+
     void GoToJail();
+
     bool GetOutOfJail(const int price);
+
     int GetJailRolls() {
         return m_jailRolls;
     }
@@ -38,6 +46,7 @@ class Player
     bool PayTax(const int fee);
 
     int PayRent(const int amount);
+
     void CollectRent(const int amount);
 
     void OutputPlayerStats();
@@ -49,6 +58,14 @@ class Player
     void PrintDiceRoll(int roll);
 
     int Liquidate(const int target);
+
+    bool TryToRollOutOfJail();
+
+    void BeginTurn();
+
+    bool IsTurnOver(bool playerJailedToBeginTurn);
+
+    void CardTransaction(int amount);
 
     int GetPosition() {
         return m_position;
@@ -91,5 +108,6 @@ class Player
     int m_rolledDice_1;
     int m_rolledDice_2;
     int m_jailRolls;
+    int m_doublesCount;
     vector<pair<string, string> > m_properties;
 };

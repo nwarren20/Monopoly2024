@@ -5,6 +5,7 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <sstream>
 #include "../include/utils.hpp"
 
 using namespace std;
@@ -23,6 +24,7 @@ Player::Player(const string name, const int playerId)
     m_jailRolls = 0;
     m_rolledDice_1 = 0;
     m_rolledDice_2 = 0;
+    m_doublesCount = 0;
 
     srand(time(0));
 }
@@ -30,6 +32,37 @@ Player::Player(const string name, const int playerId)
 Player::~Player()
 {
 
+}
+
+void Player::CardTransaction(int amount)
+{
+    if (amount > 0)
+    {
+        m_bankAccount += amount;
+
+        std::stringstream ss;
+        ss << "You received $" << amount << "!";
+
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
+    }
+    else if (amount < 0)
+    {
+        int paid = amount * -1;
+
+        if (paid > m_bankAccount)
+        {
+            paid = m_bankAccount;
+
+            Liquidate(paid);
+        }
+
+        m_bankAccount -= paid;
+
+        std::stringstream ss;
+        ss << "You paid $" << paid << ".";
+
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
+    }
 }
 
 int Player::RollDice()
@@ -71,18 +104,36 @@ int Player::AdvancePlayer(int numSpaces)
 
     if (m_position > 39)
     {
-        m_bankAccount+=200;
         m_position -= 40;
 
-        MonopolyUtils::OutputMessage(" YOU PASSED GO! COLLECT $200", 1000);
+        PassGo();
+    }
+    else if (m_position < 0)
+    {
+        m_playerId += 40;
     }
 
     return m_position;
 }
 
+void Player::PassGo()
+{
+    m_bankAccount+=200;
+
+    MonopolyUtils::OutputMessage(" YOU PASSED GO! COLLECT $200", 1000);
+}
+
+void Player::MoveToSpace(int space)
+{
+    if (space >= 0 && space < 40)
+    {
+        m_position = space;
+    }
+}
+
 void Player::GoToJail()
 {
-    m_position = 10;
+    MoveToSpace(10);
     m_jailRolls = 3;
 }
 
@@ -95,15 +146,81 @@ bool Player::GetOutOfJail(const int price)
         m_bankAccount -= price;
         m_jailRolls = 0;
         success = true;
+
+        std::stringstream ss;
+        ss << "You paid $" << price << " to get out of jail.";
+
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
     }
     else
     {
-        cout << " *** You do not have enough money to get out of jail!" << endl;
+        MonopolyUtils::OutputMessage("You do not have enough money to get out of jail!", 1000);
 
         // TODO: Make player come up with money.
     }
 
     return success;
+}
+
+bool Player::TryToRollOutOfJail()
+{
+    bool getOutOfJail = false;
+
+    if (RolledDoubles())
+    {
+        MonopolyUtils::OutputMessage("You got out of jail!", 1000);
+
+        getOutOfJail = GetOutOfJail(0);
+                        
+    }
+    else if (GetJailRolls() == 0)
+    {
+        MonopolyUtils::OutputMessage("Third roll, you must pay $50 to leave jail.", 1000);
+
+        getOutOfJail = GetOutOfJail(50);
+    }
+    else
+    {
+        MonopolyUtils::OutputMessage("You did not get out of jail!", 1000);
+    }
+
+    return getOutOfJail;
+}
+
+void Player::BeginTurn()
+{
+    m_doublesCount = 0;
+}
+
+bool Player::WasDoublesRolledThreeTimes()
+{
+    if (RolledDoubles())
+    {
+        m_doublesCount++;
+
+        if (m_doublesCount >= 3)
+        {
+            GoToJail();
+            
+            MonopolyUtils::OutputMessage(GetName() + " Rolled doubles 3 times, go to jail!", 1000);
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool Player::IsTurnOver(bool playerJailedToBeginTurn)
+{
+    if (!IsJailed() && !playerJailedToBeginTurn && RolledDoubles())
+    {
+        MonopolyUtils::OutputMessage(" You rolled doubles, roll again", 1000);
+
+        return false;
+    }
+
+    return true;
 }
 
 bool Player::PayTax(const int fee)
@@ -113,7 +230,7 @@ bool Player::PayTax(const int fee)
     if (fee <= m_bankAccount)
     {
         m_bankAccount -= fee;
-        MonopolyUtils::OutputMessage("Paid tax of $" + fee, 1000);
+        MonopolyUtils::OutputMessage("Paid tax of $", 1000);
     }
     else
     {

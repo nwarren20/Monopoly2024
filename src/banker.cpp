@@ -1,5 +1,6 @@
 #include "../include/banker.hpp"
 #include <iostream>
+#include "../include/utils.hpp"
 
 Banker::Banker()
 {
@@ -242,4 +243,43 @@ string Banker::GetPlayerInitial(const int playerId)
     }
 
     return initial;
+}
+
+void Banker::GivePlayOptions(Player * player)
+{
+    if (player->IsJailed())
+    {
+        string message = string("You're currently serving time, pay $50 to get out, or roll doubles");
+
+        if (player->GetJailRolls() == 3)
+        {
+            message += string("\nThis is your first attempt");
+        }
+        else if (player->GetJailRolls() == 2)
+        {
+            message += string("\nThis is your second attempt");
+        }
+        else if (player->GetJailRolls() == 1)
+        {
+            message += string("\nThis is your last attempt");
+        }
+                
+        MonopolyUtils::OutputMessage(message, 0);
+
+        cout << "==> Enter p to pay $50 to get out of jail." << endl;
+     }
+
+    // Give play options
+    cout << "==> Enter r to roll dice." << endl;
+    cout << "==> Enter t to trade." << endl;
+
+    if (player->OwnsProperty())
+    {
+        cout << "==> Enter m to mortgage." << endl;
+
+        if (player->OwnsMonopoly())
+        {
+            cout << "==> Enter b to buy houses/hotels" << endl;
+        }
+     }
 }

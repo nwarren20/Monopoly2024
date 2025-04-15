@@ -1,37 +1,39 @@
 # pragma once
 
 #include <vector>
+#include <iostream>
 
 using namespace std;
 
 namespace Rents
 {
-    vector<int> meditereanRents;
-    vector<int> balticRents;
-    vector<int> orientalRents;
-    vector<int> vermontRents;
-    vector<int> connecticutRents;
-    vector<int> stCharlesRents;
-    vector<int> statesRents;
-    vector<int> virginiaRents;
-    vector<int> stJamesRents;
-    vector<int> tennesseeRents;
-    vector<int> newYorkRents;
-    vector<int> kentuckyRents;
-    vector<int> indianRents;
-    vector<int> illinoisRents;
-    vector<int> atlanticRents;
-    vector<int> ventnorRents;
-    vector<int> marvinGardensRents;
-    vector<int> pacificRents;
-    vector<int> northcarolinaRents;
-    vector<int> pennsylvaniaRents;
-    vector<int> parkPlaceRents;
-    vector<int> boardwalkRents;
+    static vector<int> meditereanRents = { 2, 10, 30, 90, 160, 250 };
+    static vector<int> balticRents = { 4, 20, 60, 180, 320, 450 };
+    static vector<int> orientalRents = { 6, 30, 90, 270, 400, 550 };
+    static vector<int> vermontRents = { 6, 30, 90, 270, 400, 550 };
+    static vector<int> connecticutRents = { 8, 40, 100, 300, 450, 600 };
+    static vector<int> stCharlesRents = { 10, 50, 150, 400, 625, 750 };
+    static vector<int> statesRents = { 10, 50, 150, 400, 625, 750 };
+    static vector<int> virginiaRents = { 12, 60, 180, 500, 700, 900 };
+    static vector<int> stJamesRents = { 14, 70, 200, 550, 750, 950 };
+    static vector<int> tennesseeRents = { 14, 70, 200, 550, 750, 950 };
+    static vector<int> newYorkRents = { 16, 80, 220, 600, 800, 1000 };
+    static vector<int> kentuckyRents = { 18, 90, 250, 700, 875, 1050 };
+    static vector<int> indianRents = { 18, 90, 250, 700, 875, 1050 };
+    static vector<int> illinoisRents = { 20, 100, 300, 925, 1100 };
+    static vector<int> atlanticRents = { 22, 110, 330, 800, 975, 1150 };
+    static vector<int> ventnorRents = { 22, 110, 330, 800, 975, 1150 };
+    static vector<int> marvinGardensRents = { 24, 120, 360, 850, 1125, 1200 };
+    static vector<int> pacificRents = { 26, 130, 390, 900, 1100, 1275 };
+    static vector<int> northcarolinaRents = { 26, 130, 390, 900, 1100, 1275 };
+    static vector<int> pennsylvaniaRents = { 28, 150, 450, 1000, 1200, 1400 };
+    static vector<int> parkPlaceRents = { 35, 175, 500, 1100, 1300, 1500 };
+    static vector<int> boardwalkRents = { 50, 200, 600, 1400, 1700, 2000 };
 
 
-    void LoadRents()
+    static void LoadRents()
     {
+        cout << "LoadRents" << endl;
         meditereanRents.push_back(2);
         meditereanRents.push_back(10);
         meditereanRents.push_back(30);
