@@ -5,8 +5,10 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include "../include/utils.hpp"
 
 using namespace std;
+//using namespace MonopolyUtils;
 
 const int drawPositions[40] = 
 { 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 19, 31, 18, 32, 17, 33, 16, 34, 15, 35, 14, 36, 13, 37, 12, 38, 11, 39, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
@@ -72,9 +74,7 @@ int Player::AdvancePlayer(int numSpaces)
         m_bankAccount+=200;
         m_position -= 40;
 
-        cout << " YOU PASSED GO! COLLECT $200" << endl;
-
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        MonopolyUtils::OutputMessage(" YOU PASSED GO! COLLECT $200", 1000);
     }
 
     return m_position;
@@ -113,7 +113,7 @@ bool Player::PayTax(const int fee)
     if (fee <= m_bankAccount)
     {
         m_bankAccount -= fee;
-        cout << "Paid tax of $" << fee << endl;
+        MonopolyUtils::OutputMessage("Paid tax of $" + fee, 1000);
     }
     else
     {

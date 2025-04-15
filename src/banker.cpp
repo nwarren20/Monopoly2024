@@ -1,8 +1,6 @@
 #include "../include/banker.hpp"
 #include <iostream>
 
-
-
 Banker::Banker()
 {
 

@@ -1,7 +1,11 @@
 #include "../include/boardspace.hpp"
 #include <iostream>
+#include <thread>
+#include <chrono>
+#include "../include/utils.hpp"
 
 using namespace std;
+//using namespace MonopolyUtils;
 
 void TestFunction(const int money)
 {
@@ -52,13 +56,13 @@ void Property::HandlePlayerVisit(Player * player)
       if (success)
       {
         m_owner = player->GetPlayerId();
-        cout << " Congradulations! you purchased " << GetName() << endl;
+        MonopolyUtils::OutputMessage(" Congratulations! you purchased " + GetName(), 1000);
       }
     }
   }
   else if (m_owner == player->GetPlayerId())
   {
-    cout << "You own " << GetName() << endl;
+    MonopolyUtils::OutputMessage("You own " + GetName(), 1000);
   }
   else
   {
@@ -113,13 +117,13 @@ void RailRoad::HandlePlayerVisit(Player * player)
       if (success)
       {
         m_owner = player->GetPlayerId();
-        cout << " Congradulations! you purchased " << GetName() << endl;
+        MonopolyUtils::OutputMessage(" Congradulations! you purchased " + GetName(), 1000);
       }
     }
   }
   else if (m_owner == player->GetPlayerId())
   {
-    cout << "You own " << GetName() << endl;
+    MonopolyUtils::OutputMessage("You own " + GetName(), 1000);
   }
   else
   {
@@ -171,13 +175,13 @@ void Utility::HandlePlayerVisit(Player * player)
       if (success)
       {
         m_owner = player->GetPlayerId();
-        cout << " Congradulations! you purchased " << GetName() << endl;
+        MonopolyUtils::OutputMessage(" Congradulations! you purchased " + GetName(), 1000);
       }
     }
   }
   else if (m_owner == player->GetPlayerId())
   {
-    cout << "You own " << GetName() << endl;
+    MonopolyUtils::OutputMessage("You own " + GetName(), 1000);
   }
   else
   {
@@ -265,11 +269,11 @@ void Jail::HandlePlayerVisit(Player * player)
 {
   if (GetPosition() == 30)
   {
-    cout << "GO TO JAIL, do not collect $200" << endl;
+    MonopolyUtils::OutputMessage("GO TO JAIL, do not collect $200", 1000);
     player->GoToJail();
   }
   else
   {
-    cout << "Just Visitin" << endl;
+    MonopolyUtils::OutputMessage("Just Visiting", 1000);
   }
 }

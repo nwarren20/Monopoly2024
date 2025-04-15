@@ -5,11 +5,13 @@
 #include <vector>
 #include "../include/rents.hpp"
 #include "../include/banker.hpp"
+#include "../include/utils.hpp"
 #include <thread>
 #include <chrono>
 #include <cstdint>
 
 using namespace std;
+//using namespace MonopolyUtils;
 
 void CreateDarkPurpleGroup(vector<Property *> & group)
 {
@@ -195,16 +197,6 @@ void LoadBoard(vector<BoardSpace *> & gameBoard, vector<Property *> & darkPurple
     gameBoard.push_back( blueGroup[1] );
 }
 
-void OutputMessage(string message)
-{
-    cout << "=============================================\n\n";
-
-    cout << message << endl << endl;
-
-    cout << "=============================================\n\n";
-
-}
-
 int main()
 {
     cout << "Welcome to MONOPOLY!\n";
@@ -296,7 +288,7 @@ int main()
                     message += string("\nThis is your last attempt");
                 }
                 
-                OutputMessage(message);
+                MonopolyUtils::OutputMessage(message, 0);
 
                 cout << "==> Enter p to pay $50 to get out of jail." << endl;
             }
@@ -328,24 +320,20 @@ int main()
                 {
                     if (playerThisTurn->RolledDoubles())
                     {
-                        OutputMessage("You got out of jail!");
-                        playerJailed = !playerThisTurn->GetOutOfJail(0);
+                        MonopolyUtils::OutputMessage("You got out of jail!", 1000);
 
-                        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                        playerJailed = !playerThisTurn->GetOutOfJail(0);
                         
                     }
                     else if (playerThisTurn->GetJailRolls() == 0)
                     {
-                        OutputMessage("Third roll, you must pay $50 to leave jail.");
-                        playerJailed = !playerThisTurn->GetOutOfJail(50);
+                        MonopolyUtils::OutputMessage("Third roll, you must pay $50 to leave jail.", 1000);
 
-                        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                        playerJailed = !playerThisTurn->GetOutOfJail(50);
                     }
                     else
                     {
-                        OutputMessage("You did not get out of jail!");
-
-                        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                        MonopolyUtils::OutputMessage("You did not get out of jail!", 1000);
                     }
                 }
 
@@ -361,9 +349,7 @@ int main()
 
                 space = gameBoard[position]->GetName();
 
-                OutputMessage(playerThisTurn->GetName() + " landed on " + space);
-
-                std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+                MonopolyUtils::OutputMessage(playerThisTurn->GetName() + " landed on " + space, 2000);
 
                 gameBoard[position]->HandlePlayerVisit(playerThisTurn);
 
@@ -375,16 +361,12 @@ int main()
                     {
                         playerThisTurn->GoToJail();
                         turnOver = true;
-                        OutputMessage(" Rolled doubles 3 times, go to jail!");
+                        MonopolyUtils::OutputMessage(" Rolled doubles 3 times, go to jail!", 1000);
                         rolledDoublesCount = 0;
-
-                        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
                     }
                     else
                     {
-                        OutputMessage(" You rolled doubles, roll again");
-
-                        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                        MonopolyUtils::OutputMessage(" You rolled doubles, roll again", 1000);
                     }
                 }
                 else
@@ -396,28 +378,28 @@ int main()
             }
             else if (input.compare("t") == 0)
             {
-                OutputMessage("Not implemented yet");
+                MonopolyUtils::OutputMessage("Not implemented yet", 0);
             }
             else if (input.compare("m") == 0)
             {
                 if (playerThisTurn->OwnsProperty())
                 {
-                    OutputMessage("Not implemented yet");
+                    MonopolyUtils::OutputMessage("Not implemented yet", 0);
                 }
                 else
                 {
-                    OutputMessage("must own property to mortgage");
+                    MonopolyUtils::OutputMessage("must own property to mortgage", 0);
                 }
             }
             else if (input.compare("b") == 0)
             {
                 if (playerThisTurn->OwnsMonopoly())
                 {
-                    OutputMessage("Not implemented yet");
+                    MonopolyUtils::OutputMessage("Not implemented yet", 0);
                 }
                 else
                 {
-                    OutputMessage("must own monopoly to buy houses/hotels!");
+                    MonopolyUtils::OutputMessage("must own monopoly to buy houses/hotels!", 0);
                 }
             }
             else if (playerJailed && input.compare("p") == 0)
@@ -426,7 +408,7 @@ int main()
             }
             else
             {
-                OutputMessage(string("Invalid Entry: " + input));
+                MonopolyUtils::OutputMessage(string("Invalid Entry: " + input), 0);
             }
         }
 
