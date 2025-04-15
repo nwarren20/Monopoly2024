@@ -13,9 +13,9 @@ class Banker
 
     void RentTransaction(const int renterId, const int ownerId, const int amount, string group, bool monopoly);
 
-    void RailRoadTransaction(const int passangerId, const int ownerId, const int railRoadsOwned);
+    void RailRoadTransaction(const int passangerId, const int ownerId, const int railRoadsOwned, const bool chance);
 
-    void UtilityTransaction(const int customerId, const int ownerId, const int diceRoll, const int utilitiesOwned);
+    void UtilityTransaction(const int customerId, const int ownerId, const int diceRoll, const int utilitiesOwned, const bool chance);
 
     void WhoesPlaying();
 
@@ -36,6 +36,8 @@ class Banker
     bool DoesPlayerOwnMonopoly(Player * player, string group);
 
     void GivePlayOptions(Player * player);
+
+    void PayEachPlayer(Player * player, int amount);
 
   private:
 

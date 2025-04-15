@@ -1,5 +1,6 @@
 #include "../include/banker.hpp"
 #include <iostream>
+#include <sstream>
 #include "../include/utils.hpp"
 
 Banker::Banker()
@@ -78,7 +79,28 @@ Player * Banker::GetActivePlayerForTurn(const int turn)
     return nullptr;
 }
 
-void Banker::UtilityTransaction(const int customerId, const int ownerId, const int diceRoll, const int bothUtilitiesOwned)
+void Banker::PayEachPlayer(Player * player, int amount)
+{
+    for (size_t i = 0; i < m_activePlayers.size(); i++)
+    {
+        int playerId = m_activePlayers[i];
+
+        Player * opponent = m_allPlayers[playerId];
+
+        if(opponent != player)
+        {
+            int paid = player->PayGeneric(amount);
+            opponent->CollectGeneric(amount);
+
+            std::stringstream ss;
+            ss << player->GetName() << " paid " << opponent->GetName() << " $" << paid;
+
+            MonopolyUtils::OutputMessage(ss.str(), 1000);
+        }
+    }
+}
+
+void Banker::UtilityTransaction(const int customerId, const int ownerId, const int diceRoll, const int bothUtilitiesOwned, const bool chance)
 {
     Player * customer = m_allPlayers[customerId];
     Player * owner = m_allPlayers[ownerId];
@@ -87,23 +109,52 @@ void Banker::UtilityTransaction(const int customerId, const int ownerId, const i
 
     cout << "Property is owned by " << owner->GetName() << endl;
 
-    if (bothUtilitiesOwned)
+    if (chance)
+    {
+        string input = string("");
+
+        while(input.compare("r") != 0)
+        {
+            cout << "enter 'r' to roll dice for billed amount" << endl;
+            cin >> input;
+        }
+        
+        int diceTotal = customer->RollDice();
+        bill = diceTotal * 10;
+
+        std::stringstream ss;
+        ss << owner->GetName() << " your bill is tens times the amount on the dice: $" << bill;
+
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
+
+    }
+    else if (bothUtilitiesOwned)
     {
         bill = diceRoll * 10;
-        cout << owner->GetName() << " owns both utilities, your bill is tens times the amount on the dice: $" << bill << endl;
+
+        std::stringstream ss;
+        ss << owner->GetName() << " owns both utilities, your bill is tens times the amount on the dice: $" << bill;
+
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
     }
     else
     {
-        cout << owner->GetName() << " owns one utility, your bill is four times the amount on the dice: $" << bill << endl;
+        std::stringstream ss;
+        ss << owner->GetName() << " owns one utility, your bill is four times the amount on the dice: $" << bill;
+
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
     }
 
     int paid = customer->PayRent(bill);
     owner->CollectRent(paid);
 
-    cout << owner->GetName() << " collected $" << paid << endl;
+    std::stringstream ss;
+    ss << owner->GetName() << " collected $" << paid;
+
+    MonopolyUtils::OutputMessage(ss.str(), 1000);
 }
 
-void Banker::RailRoadTransaction(const int passangerId, const int ownerId, const int railRoadsOwned)
+void Banker::RailRoadTransaction(const int passangerId, const int ownerId, const int railRoadsOwned, const bool chance)
 {
     Player * customer = m_allPlayers[passangerId];
     Player * owner = m_allPlayers[ownerId];
@@ -113,32 +164,58 @@ void Banker::RailRoadTransaction(const int passangerId, const int ownerId, const
     if (railRoadsOwned == 2)
     {
       ticketPrice = 50;
+    
+      stringstream ss;
+      ss << "Luggage fees are a pain, " << owner->GetName() << " is getting a little greedy with two lines.";
 
-      cout << "Luggage fees are a pain, " << owner->GetName() << " is getting a little greedy with two lines." << endl;
+      MonopolyUtils::OutputMessage(ss.str(), 1000);
     }
     else if (railRoadsOwned == 3)
     {
       ticketPrice = 100;
 
-      cout << "Bathroom fees, this is getting rediculous, someone needs to put a stop to " << owner->GetName() << endl;
+      stringstream ss;
+      ss << "Bathroom fees, this is getting rediculous, someone needs to put a stop to " << owner->GetName();
+
+      MonopolyUtils::OutputMessage(ss.str(), 1000);
     }
     else if (railRoadsOwned == 4)
     {
       ticketPrice = 200;
 
-      cout << owner->GetName() << " is a real tycoon, we are paying out the nose now." << endl;
+      stringstream ss;
+      ss << owner->GetName() << " is a real tycoon, we are paying out the nose now.";
+
+      MonopolyUtils::OutputMessage(ss.str(), 1000);
     }
     else
     {
-        cout << "That was a nice trip, " << owner->GetName() << " only has one Rail line so they didn't overcharge." << endl;
+        stringstream ss;
+        ss << "That was a nice trip, " << owner->GetName() << " only has one Rail line so they didn't overcharge.";
+
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
     }
 
-    cout << "Your ticket price was $" << ticketPrice << endl;
+    if (chance)
+    {
+        ticketPrice * 2;
+
+        stringstream ss;
+        ss << "You took a CHANCE, and today you pay double";
+
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
+    }
+
+    stringstream ss;
+    ss << "Your ticket price was $" << ticketPrice;
+    MonopolyUtils::OutputMessage(ss.str(), 1000);
 
     int paid = customer->PayRent(ticketPrice);
     owner->CollectRent(paid);
 
-    cout << owner->GetName() << " collected $" << paid << endl;
+    ss.clear();
+    ss << owner->GetName() << " collected $" << paid;
+    MonopolyUtils::OutputMessage(ss.str(), 1000);
 }
 
 void Banker::RentTransaction(const int renterId, const int ownerId, const int amount, string group, bool monopoly)
@@ -251,6 +328,11 @@ void Banker::GivePlayOptions(Player * player)
     {
         string message = string("You're currently serving time, pay $50 to get out, or roll doubles");
 
+        if (player->HasGetOutOfJailFreeCard())
+        {
+            message += string(", or use Get Out of Jail Free Card!");
+        }
+
         if (player->GetJailRolls() == 3)
         {
             message += string("\nThis is your first attempt");
@@ -267,9 +349,13 @@ void Banker::GivePlayOptions(Player * player)
         MonopolyUtils::OutputMessage(message, 0);
 
         cout << "==> Enter p to pay $50 to get out of jail." << endl;
+
+        if (player->HasGetOutOfJailFreeCard())
+        {
+            cout << "==> Enter f to use Get Out of Jail Free Card." << endl;
+        }
      }
 
-    // Give play options
     cout << "==> Enter r to roll dice." << endl;
     cout << "==> Enter t to trade." << endl;
 

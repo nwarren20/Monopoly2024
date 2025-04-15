@@ -83,16 +83,35 @@ int main()
 
                 position = playerThisTurn->AdvancePlayer(spacesToMove);
 
-                playerThisTurn->PrintBoardPosition(gameBoard);
+                bool moved = true;
 
-                space = gameBoard[position]->GetName();
+                while(moved)
+                {
+                    position = playerThisTurn->GetPosition();
 
-                MonopolyUtils::OutputMessage(playerThisTurn->GetName() + " landed on " + space, 2000);
+                    playerThisTurn->PrintBoardPosition(gameBoard);
 
-                gameBoard[position]->HandlePlayerVisit(playerThisTurn);
+                    space = gameBoard[position]->GetName();
+
+                    MonopolyUtils::OutputMessage(playerThisTurn->GetName() + " landed on " + space, 2000);
+
+                    moved = gameBoard[position]->HandlePlayerVisit(playerThisTurn);
+                }
 
                 turnOver = playerThisTurn->IsTurnOver(playerJailedToBeginTurn);
+            }
+            else if (input.compare("f") == 0 && playerThisTurn->IsJailed() && playerThisTurn->HasGetOutOfJailFreeCard())
+            {
+                MonopolyUtils::OutputMessage(playerThisTurn->GetName() + " used their 'Get Out of Jail Free' card!", 1000);
 
+                bool GetOutOfJail = playerThisTurn->UseGetOutOfJailFreeCard();
+
+                if (!GetOutOfJail)
+                {
+                    MonopolyUtils::OutputMessage(playerThisTurn->GetName() + "'s card did not work", 1000);
+                    turnOver = true;
+                    continue;
+                }
             }
             else if (input.compare("t") == 0)
             {

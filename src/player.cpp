@@ -25,6 +25,9 @@ Player::Player(const string name, const int playerId)
     m_rolledDice_1 = 0;
     m_rolledDice_2 = 0;
     m_doublesCount = 0;
+    m_getOutOfJailFreeCardCount = 0;
+    m_payRailRoadDouble = false;
+    m_payUtilityTenTimes = false;
 
     srand(time(0));
 }
@@ -187,6 +190,28 @@ bool Player::TryToRollOutOfJail()
     return getOutOfJail;
 }
 
+void Player::AwardGetOutOfJailFreeCard()
+{
+    m_getOutOfJailFreeCardCount++;
+}
+
+bool Player::UseGetOutOfJailFreeCard()
+{
+    bool success = false;
+
+    if (m_getOutOfJailFreeCardCount > 0)
+    {
+        success = GetOutOfJail(0);
+
+        if (success)
+        {
+            m_getOutOfJailFreeCardCount--;
+        }
+    }
+    
+    return success;
+}
+
 void Player::BeginTurn()
 {
     m_doublesCount = 0;
@@ -230,7 +255,9 @@ bool Player::PayTax(const int fee)
     if (fee <= m_bankAccount)
     {
         m_bankAccount -= fee;
-        MonopolyUtils::OutputMessage("Paid tax of $", 1000);
+        stringstream ss;
+        ss << "Paid tax of $" << fee;
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
     }
     else
     {
@@ -334,6 +361,24 @@ int Player::PayRent(const int amount)
     return paid;
 }
 
+int Player::PayGeneric(const int amount)
+{
+    int paid = 0;
+
+    if (amount <= m_bankAccount)
+    {
+        paid = amount;
+    }
+    else
+    {
+        paid = Liquidate(amount);
+    }
+
+    m_bankAccount -= paid;
+
+    return paid;
+}
+
 int Player::Liquidate(const int target)
 {
     cout << "you do not have enought cash pay rent, you must liquidate assets for $" << target << endl;
@@ -347,6 +392,11 @@ int Player::Liquidate(const int target)
 }
     
 void Player::CollectRent(const int amount)
+{
+    m_bankAccount += amount;
+}
+
+void Player::CollectGeneric(const int amount)
 {
     m_bankAccount += amount;
 }

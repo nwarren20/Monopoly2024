@@ -41,7 +41,7 @@ Property::~Property()
 
 }
 
-void Property::HandlePlayerVisit(Player * player)
+bool Property::HandlePlayerVisit(Player * player)
 {
   if (m_owner == -1)
   {
@@ -70,6 +70,8 @@ void Property::HandlePlayerVisit(Player * player)
 
     GetBanker()->RentTransaction(player->GetPlayerId(), m_owner, m_baseRent, GetGroupName(), monopoly);
   }
+
+  return false;
 }
 
 bool Property::DoesOwnerHaveMonopoly(const int playerId)
@@ -101,7 +103,7 @@ RailRoad::~RailRoad()
 
 }
 
-void RailRoad::HandlePlayerVisit(Player * player)
+bool RailRoad::HandlePlayerVisit(Player * player)
 {
   if (m_owner == -1)
   {
@@ -129,8 +131,12 @@ void RailRoad::HandlePlayerVisit(Player * player)
   {
     const int ownerRailroadCount = GetRailroadsOwnedByPlayer(m_owner);
 
-    GetBanker()->RailRoadTransaction(player->GetPlayerId(), m_owner, ownerRailroadCount);
+    GetBanker()->RailRoadTransaction(player->GetPlayerId(), m_owner, ownerRailroadCount, player->GetPayRailRoadDouble());
+
+    player->PayRailRoadDouble(false);
   }
+
+  return false;
 }
 
 int RailRoad::GetRailroadsOwnedByPlayer(const int ownerId)
@@ -159,7 +165,7 @@ Utility::~Utility()
 
 }
 
-void Utility::HandlePlayerVisit(Player * player)
+bool Utility::HandlePlayerVisit(Player * player)
 {
   if (m_owner == -1)
   {
@@ -187,8 +193,12 @@ void Utility::HandlePlayerVisit(Player * player)
   {
     bool ownsBoth = DoesPlayerOwnBothUtilities(m_owner);
 
-    GetBanker()->UtilityTransaction(player->GetPlayerId(), m_owner, player->GetRolledDiceTotal(), ownsBoth);
+    GetBanker()->UtilityTransaction(player->GetPlayerId(), m_owner, player->GetRolledDiceTotal(), ownsBoth, player->GetPayUtilityTenTimes());
+
+    player->PayUtilityTenTimes(false);
   }
+
+  return false;
 }
 
 bool Utility::DoesPlayerOwnBothUtilities(const int playerId)
@@ -218,49 +228,152 @@ TakeCard::~TakeCard()
 
 }
 
-void TakeCard::HandlePlayerVisit(Player * player)
+bool TakeCard::HandlePlayerVisit(Player * player)
 {
+    bool moved = false;
+
     if (GetName().compare("Chance") == 0)
     {
       Card picked = m_cardStack->PickupChanceCard();
 
-      PerformCard(player, picked);
+      moved = PerformCard(player, picked);
+
+      m_cardStack->ReturnChanceCard(picked);
     }
     else if (GetName().compare("Community Chest") == 0)
     {
       Card picked = m_cardStack->PickupCommunityChestCard();
 
-      PerformCard(player, picked);
+      moved = PerformCard(player, picked);
     }
+
+    return moved;
 }
 
-void TakeCard::PerformCard(Player * player, Card card)
+bool TakeCard::PerformCard(Player * player, Card card)
 {
   MonopolyUtils::OutputMessage(card.text, 4000);
 
+  bool moved = false;
+
   if (card.transaction != 0)
   {
-    player->CardTransaction(card.transaction);
+      if(card.transaction == -50)
+      {
+        GetBanker()->PayEachPlayer(player, 50);
+      }
+      else
+      {
+        player->CardTransaction(card.transaction);
+      }
   }
 
   if (card.moveTo != -1)
   {
-    player->MoveToSpace(card.moveTo);
+      int currentPos = player->GetPosition();
 
-    if (card.moveTo == 10)
-    {
-      player->GoToJail();
-    }
-    else if (card.moveTo == 0)
-    {
-      player->PassGo();
-    }
+      // Go to jail.
+      if (card.moveTo == 10)
+      {
+          player->MoveToSpace(card.moveTo);
+
+          player->GoToJail();
+      }
+      else if (card.moveTo == 0)
+      {
+          // advance to go
+          player->MoveToSpace(card.moveTo);
+
+          player->PassGo();
+      }
+      else if (card.moveTo == 5)
+      {
+          // reading railroad
+          if (currentPos > 5)
+          {
+            player->PassGo();
+          }
+
+          player->MoveToSpace(card.moveTo);
+
+          moved = true;
+      }
+      else if (card.moveTo == -2)
+      {
+          // Move to nearest railroad
+          if (currentPos < 5 || currentPos > 35)
+          {
+              if (currentPos > 35)
+              {
+                player->PassGo();
+              }
+
+              player->MoveToSpace(5);
+          }
+          else if (currentPos < 15)
+          {
+            player->MoveToSpace(15);
+          }
+          else if (currentPos < 25)
+          {
+            player->MoveToSpace(25);
+          }
+          else
+          {
+            player->MoveToSpace(35);
+          }
+
+          player->PayRailRoadDouble();
+
+          moved = true;
+      }
+      else if (card.moveTo == -3)
+      {
+          // Move to nearest utility
+          if(currentPos < 12 || currentPos > 28)
+          {
+              if (currentPos > 28)
+              {
+                player->PassGo();
+              }
+
+              player->MoveToSpace(12);
+          }
+          else
+          {
+              player->MoveToSpace(28);
+          }
+
+          player->PayUtilityTenTimes();
+
+          moved = true;
+      }
+      else if (card.moveTo >= 0)
+      {
+          if (currentPos > card.moveTo)
+          {
+             player->PassGo();
+          }
+
+          player->MoveToSpace(card.moveTo);
+
+          moved = true;
+      }
   }
 
   if (card.moveRelative != 0)
   {
-    player->AdvancePlayer(card.moveRelative);
+      player->AdvancePlayer(card.moveRelative);
+
+      moved = true;
   }
+
+  if (card.free == true)
+  {
+      player->AwardGetOutOfJailFreeCard();
+  }
+
+  return moved;
 }
 
 Tax::Tax(const string name, const int position, const int taxAmount)
@@ -274,9 +387,11 @@ Tax::~Tax()
 
 }
 
-void Tax::HandlePlayerVisit(Player * player)
+bool Tax::HandlePlayerVisit(Player * player)
 {
   player->PayTax(m_taxAmount);
+
+  return false;
 }
 
 FreeSpace::FreeSpace(const string name, const int position, const int award)
@@ -290,9 +405,9 @@ FreeSpace::~FreeSpace()
 
 }
 
-void FreeSpace::HandlePlayerVisit(Player * player)
+bool FreeSpace::HandlePlayerVisit(Player * player)
 {
-
+  return false;
 }
 
 Jail::Jail(const string name, const int position)
@@ -305,7 +420,7 @@ Jail::~Jail()
 
 }
 
-void Jail::HandlePlayerVisit(Player * player)
+bool Jail::HandlePlayerVisit(Player * player)
 {
   if (GetPosition() == 30)
   {
@@ -316,4 +431,6 @@ void Jail::HandlePlayerVisit(Player * player)
   {
     MonopolyUtils::OutputMessage("Just Visiting", 1000);
   }
+
+  return false;
 }

@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <random>
 
 using namespace std;
 
@@ -11,6 +12,7 @@ struct Card
     int transaction = 0;
     int moveRelative = 0;
     int moveTo = -1;
+    bool free = false;
 };
 
 class CardDeck
@@ -31,6 +33,10 @@ class CardDeck
 
     protected:
 
+        void LoadDecks();
+
+        void LoadChanceDeck();
+
         void ShuffleChanceCards();
 
         void ShuffleCommunityChestCards();
@@ -40,5 +46,7 @@ class CardDeck
         vector<Card> m_chanceCards;
 
         vector<Card> m_communityChestCards;
+
+        int m_chanceIndex;
 
 };

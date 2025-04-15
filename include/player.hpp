@@ -37,6 +37,14 @@ class Player
         return m_jailRolls;
     }
 
+    void AwardGetOutOfJailFreeCard();
+
+    bool HasGetOutOfJailFreeCard() {
+        return (m_getOutOfJailFreeCardCount > 0);
+    }
+
+    bool UseGetOutOfJailFreeCard();
+
     bool BuyProperty(int cost, string prop, string group);
 
     bool BuyRailRoad(string name);
@@ -47,7 +55,17 @@ class Player
 
     int PayRent(const int amount);
 
+    int PayGeneric(const int amount);
+
+    void PayRailRoadDouble(const bool active = true) { m_payRailRoadDouble = active; };
+    bool GetPayRailRoadDouble() { return m_payRailRoadDouble; }
+
+    void PayUtilityTenTimes(const bool active = true) { m_payUtilityTenTimes = active; };
+    bool GetPayUtilityTenTimes() { return m_payUtilityTenTimes; }
+
     void CollectRent(const int amount);
+
+    void CollectGeneric(const int amount);
 
     void OutputPlayerStats();
 
@@ -109,5 +127,8 @@ class Player
     int m_rolledDice_2;
     int m_jailRolls;
     int m_doublesCount;
+    int m_getOutOfJailFreeCardCount;
+    bool m_payRailRoadDouble;
+    bool m_payUtilityTenTimes;
     vector<pair<string, string> > m_properties;
 };

@@ -26,7 +26,7 @@ class BoardSpace
     BoardSpace(BoardSpaceType type, string name, const int position);
     ~BoardSpace();
 
-    virtual void HandlePlayerVisit(Player * player) = 0;
+    virtual bool HandlePlayerVisit(Player * player) = 0;
 
     string GetName() {
       return m_name;
@@ -63,7 +63,7 @@ class Property : public BoardSpace
     Property(const string name, const int position, string groupName, int purchasePrice, vector<int> & houseRents);
     ~Property();
 
-    void HandlePlayerVisit(Player * player);
+    bool HandlePlayerVisit(Player * player);
 
     void BuyHouses();
 
@@ -113,7 +113,7 @@ class RailRoad : public BoardSpace
     RailRoad(const string name, const int position);
     ~RailRoad();
 
-    void HandlePlayerVisit(Player * player);
+    bool HandlePlayerVisit(Player * player);
 
     int GetRailroadsOwnedByPlayer(const int ownerId);
 
@@ -148,7 +148,7 @@ class Utility : public BoardSpace
     Utility(const string name, const int position);
     ~Utility();
 
-    void HandlePlayerVisit(Player * player);
+    bool HandlePlayerVisit(Player * player);
 
     bool DoesPlayerOwnBothUtilities(const int playerId);
 
@@ -183,9 +183,9 @@ class TakeCard : public BoardSpace
     TakeCard(const string name, const int position, CardDeck * cardStack);
     ~TakeCard();
 
-    void HandlePlayerVisit(Player * player);
+    bool HandlePlayerVisit(Player * player);
 
-    void PerformCard(Player * player, Card card);
+    bool PerformCard(Player * player, Card card);
 
   private:
 
@@ -198,7 +198,7 @@ class Tax : public BoardSpace
     Tax(const string name, const int position, const int taxAmount);
     ~Tax();
 
-    void HandlePlayerVisit(Player * player);
+    bool HandlePlayerVisit(Player * player);
 
   private:
 
@@ -211,7 +211,7 @@ class FreeSpace : public BoardSpace
     FreeSpace(const string name, const int position, const int award);
     ~FreeSpace();
 
-    void HandlePlayerVisit(Player * player);
+    bool HandlePlayerVisit(Player * player);
 
   private:
 
@@ -224,7 +224,7 @@ class Jail : public BoardSpace
     Jail(const string name, const int position);
     ~Jail();
 
-    void HandlePlayerVisit(Player * player);
+    bool HandlePlayerVisit(Player * player);
 
   private:
 
