@@ -13,6 +13,10 @@ struct Card
     int moveRelative = 0;
     int moveTo = -1;
     bool free = false;
+    bool payOtherPlayers = false;
+    bool collectOtherPlayers = false;
+    int costPerHouse = 0;
+    int costPerHotel = 0;
 };
 
 class CardDeck
@@ -37,6 +41,8 @@ class CardDeck
 
         void LoadChanceDeck();
 
+        void LoadCommunityChestCards();
+
         void ShuffleChanceCards();
 
         void ShuffleCommunityChestCards();
@@ -49,4 +55,5 @@ class CardDeck
 
         int m_chanceIndex;
 
+        int m_communityChestIndex;
 };

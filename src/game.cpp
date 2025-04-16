@@ -43,6 +43,8 @@ int main()
 
         playerThisTurn->BeginTurn();
 
+        int gaffDice = 0;
+
         while (!turnOver)
         {
             playerThisTurn->PrintBoardPosition(gameBoard);
@@ -63,7 +65,8 @@ int main()
             {
                 bool playerJailedToBeginTurn = playerThisTurn->IsJailed();
 
-                int spacesToMove = playerThisTurn->RollDice();
+                int spacesToMove = playerThisTurn->RollDice(gaffDice);
+                gaffDice = 0;
 
                 if (playerJailedToBeginTurn)
                 {
@@ -142,6 +145,21 @@ int main()
             else if (playerThisTurn->IsJailed() && input.compare("p") == 0)
             {
                 playerThisTurn->GetOutOfJail(50);
+            }
+            else if (input.compare("g") == 0)
+            {
+                bool validRoll = false;
+                int roll = 0;
+
+                while (!validRoll)
+                {
+                    cout << "Enter Roll 2-12" << endl;
+                    cin >> roll;
+
+                    validRoll = (roll >=2 && roll <= 12);
+                }
+                
+                gaffDice = roll;
             }
             else
             {

@@ -13,7 +13,9 @@ class Player
     Player(const string name, const int playerId);
     ~Player();
 
-    int RollDice();
+    int RollDice(int gaffRoll = 0);
+
+    void GaffDice(int gaffRoll);
 
     int GetRolledDiceTotal() {
         return m_rolledDice_1 + m_rolledDice_2;

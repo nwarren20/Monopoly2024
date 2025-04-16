@@ -39,6 +39,10 @@ class Banker
 
     void PayEachPlayer(Player * player, int amount);
 
+    void CollectEachPlayer(Player * player, int amount);
+
+    void PayPerHouseAndHotel(Player * player, int perHotelCost, int perHouseCost);
+
   private:
 
     int GetPlayerActiveIndex(const int playerId);

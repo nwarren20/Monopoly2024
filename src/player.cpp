@@ -68,13 +68,15 @@ void Player::CardTransaction(int amount)
     }
 }
 
-int Player::RollDice()
+int Player::RollDice(int gaffRoll)
 {
     int low = 1;
     int high = 6;
 
     m_rolledDice_1 = (rand() % high) + low;
     m_rolledDice_2 = (rand() % high) + low;
+
+    GaffDice(gaffRoll);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
@@ -94,6 +96,57 @@ int Player::RollDice()
     }
 
     return GetRolledDiceTotal();
+}
+
+void Player::GaffDice(int gaffRoll)
+{
+    switch(gaffRoll)
+    {
+        case 2:
+            m_rolledDice_1 = 1;
+            m_rolledDice_2 = 1;
+            break;
+        case 3:
+            m_rolledDice_1 = 1;
+            m_rolledDice_2 = 2;
+            break;
+        case 4:
+            m_rolledDice_1 = 3;
+            m_rolledDice_2 = 1;
+            break;
+        case 5:
+            m_rolledDice_1 = 2;
+            m_rolledDice_2 = 3;
+            break;
+        case 6:
+            m_rolledDice_1 = 4;
+            m_rolledDice_2 = 2;
+            break;
+        case 7:
+            m_rolledDice_1 = 3;
+            m_rolledDice_2 = 4;
+            break;
+        case 8:
+            m_rolledDice_1 = 3;
+            m_rolledDice_2 = 5;
+            break;
+        case 9:
+            m_rolledDice_1 = 5;
+            m_rolledDice_2 = 4;
+            break;
+        case 10:
+            m_rolledDice_1 = 6;
+            m_rolledDice_2 = 4;
+            break;
+        case 11:
+            m_rolledDice_1 = 6;
+            m_rolledDice_2 = 5;
+            break;
+        case 12:
+            m_rolledDice_1 = 6;
+            m_rolledDice_2 = 6;
+            break;
+    }
 }
 
 bool Player::RolledDoubles()

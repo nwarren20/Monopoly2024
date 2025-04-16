@@ -100,6 +100,46 @@ void Banker::PayEachPlayer(Player * player, int amount)
     }
 }
 
+void Banker::CollectEachPlayer(Player * player, int amount)
+{
+    for (size_t i = 0; i < m_activePlayers.size(); i++)
+    {
+        int playerId = m_activePlayers[i];
+
+        Player * opponent = m_allPlayers[playerId];
+
+        if(opponent != player)
+        {
+            player->CollectGeneric(amount);
+            int paid = opponent->PayGeneric(amount);
+
+            std::stringstream ss;
+            ss << opponent->GetName() << " paid " << player->GetName() << " $" << paid;
+
+            MonopolyUtils::OutputMessage(ss.str(), 1000);
+        }
+    }
+}
+
+void Banker::PayPerHouseAndHotel(Player * player, int perHotelCost, int perHouseCost)
+{
+    // TODO: get player house and hotel counts.
+    int hotelCount = 0;
+    int houseCount = 0;
+
+    int hotelTotalCost = hotelCount * perHotelCost;
+    int houseTotalCost = houseCount * perHouseCost;
+    
+    int totalCost = hotelTotalCost + houseTotalCost;
+
+    int paid = player->PayGeneric(totalCost);
+
+    std::stringstream ss;
+    ss << player->GetName() << " paid a total of $" << paid << " for all houses and hotels";
+
+    MonopolyUtils::OutputMessage(ss.str(), 1000);
+}
+
 void Banker::UtilityTransaction(const int customerId, const int ownerId, const int diceRoll, const int bothUtilitiesOwned, const bool chance)
 {
     Player * customer = m_allPlayers[customerId];
@@ -198,7 +238,7 @@ void Banker::RailRoadTransaction(const int passangerId, const int ownerId, const
 
     if (chance)
     {
-        ticketPrice * 2;
+        ticketPrice *= 2;
 
         stringstream ss;
         ss << "You took a CHANCE, and today you pay double";
@@ -213,7 +253,7 @@ void Banker::RailRoadTransaction(const int passangerId, const int ownerId, const
     int paid = customer->PayRent(ticketPrice);
     owner->CollectRent(paid);
 
-    ss.clear();
+    ss = stringstream("");
     ss << owner->GetName() << " collected $" << paid;
     MonopolyUtils::OutputMessage(ss.str(), 1000);
 }

@@ -76,9 +76,9 @@ using namespace std;
     
     void MonopolyUtils::CreateRedGroup(vector<Property *> & group)
     {
-        Property * Kentucky = new Property("Kentucky Avenue", 21, "Red", 220, Rents::newYorkRents);
-        Property * Indiana = new Property("Indiana Avenue", 23, "Red", 220, Rents::newYorkRents);
-        Property * Illinois = new Property("Illinois Avenue", 24, "Red", 240, Rents::newYorkRents);
+        Property * Kentucky = new Property("Kentucky Avenue", 21, "Red", 220, Rents::kentuckyRents);
+        Property * Indiana = new Property("Indiana Avenue", 23, "Red", 220, Rents::indianRents);
+        Property * Illinois = new Property("Illinois Avenue", 24, "Red", 240, Rents::illinoisRents);
     
         group.push_back(Kentucky);
         group.push_back(Indiana);
@@ -91,9 +91,9 @@ using namespace std;
     
     void MonopolyUtils::CreateYellowGroup(vector<Property *> & group)
     {
-        Property * Atlantic = new Property("Atlantic Avenue", 26, "Yellow", 260, Rents::newYorkRents);
-        Property * Ventnor = new Property("Ventnor Avenue", 27, "Yellow", 260, Rents::newYorkRents);
-        Property * MarvinGardens = new Property("Marvin Gardens", 29, "Yellow", 280, Rents::newYorkRents);
+        Property * Atlantic = new Property("Atlantic Avenue", 26, "Yellow", 260, Rents::atlanticRents);
+        Property * Ventnor = new Property("Ventnor Avenue", 27, "Yellow", 260, Rents::ventnorRents);
+        Property * MarvinGardens = new Property("Marvin Gardens", 29, "Yellow", 280, Rents::marvinGardensRents);
     
         group.push_back(Atlantic);
         group.push_back(Ventnor);

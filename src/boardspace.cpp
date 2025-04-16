@@ -245,6 +245,8 @@ bool TakeCard::HandlePlayerVisit(Player * player)
       Card picked = m_cardStack->PickupCommunityChestCard();
 
       moved = PerformCard(player, picked);
+
+      m_cardStack->ReturnCommunityChestCard(picked);
     }
 
     return moved;
@@ -258,9 +260,13 @@ bool TakeCard::PerformCard(Player * player, Card card)
 
   if (card.transaction != 0)
   {
-      if(card.transaction == -50)
+      if(card.payOtherPlayers == true)
       {
-        GetBanker()->PayEachPlayer(player, 50);
+        GetBanker()->PayEachPlayer(player, card.transaction);
+      }
+      else if (card.collectOtherPlayers == true)
+      {
+        GetBanker()->CollectEachPlayer(player, card.transaction);
       }
       else
       {
@@ -371,6 +377,11 @@ bool TakeCard::PerformCard(Player * player, Card card)
   if (card.free == true)
   {
       player->AwardGetOutOfJailFreeCard();
+  }
+
+  if (card.costPerHotel > 0 || card.costPerHouse > 0)
+  {
+      GetBanker()->PayPerHouseAndHotel(player, card.costPerHotel, card.costPerHouse);
   }
 
   return moved;
