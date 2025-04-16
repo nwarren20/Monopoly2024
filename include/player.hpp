@@ -21,6 +21,8 @@ class Player
         return m_rolledDice_1 + m_rolledDice_2;
     }
 
+    void SetToken(const string token);
+
     bool RolledDoubles();
 
     bool WasDoublesRolledThreeTimes();
@@ -92,7 +94,7 @@ class Player
     }
 
     string GetName() {
-        return m_name;
+        return string(m_name + "(" + m_token + ")");
     }
 
     int GetPlayerId() {
@@ -101,6 +103,10 @@ class Player
 
     string GetInitial() {
         return m_initial;
+    }
+
+    string GetToken() {
+        return m_token;
     }
 
     bool OwnsProperty() {
@@ -123,6 +129,7 @@ class Player
     int m_playerId;
     string m_name;
     string m_initial;
+    string m_token;
     int m_bankAccount;
     int m_position;
     int m_rolledDice_1;

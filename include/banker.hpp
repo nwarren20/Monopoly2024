@@ -2,6 +2,8 @@
 
 #include "player.hpp"
 #include <vector>
+#include <list>
+#include <map>
 
 using namespace std;
 
@@ -15,9 +17,11 @@ class Banker
 
     void RailRoadTransaction(const int passangerId, const int ownerId, const int railRoadsOwned, const bool chance);
 
-    void UtilityTransaction(const int customerId, const int ownerId, const int diceRoll, const int utilitiesOwned, const bool chance);
+    void UtilityTransaction(const int customerId, const int ownerId, const int diceRoll, const bool bothUtilitiesOwned, const bool chance);
 
     void WhoesPlaying();
+
+    void SelectToken(Player * player);
 
     void AddPlayerToGame(Player * player);
 
@@ -43,6 +47,8 @@ class Banker
 
     void PayPerHouseAndHotel(Player * player, int perHotelCost, int perHouseCost);
 
+    map<string, int> GetPlayerPositions();
+
   private:
 
     int GetPlayerActiveIndex(const int playerId);
@@ -50,4 +56,6 @@ class Banker
     vector<Player *> m_allPlayers;
 
     vector<int> m_activePlayers;
+
+    list<string> m_availableTokens;
 };

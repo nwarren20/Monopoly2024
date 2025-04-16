@@ -132,9 +132,9 @@ bool RailRoad::HandlePlayerVisit(Player * player)
     const int ownerRailroadCount = GetRailroadsOwnedByPlayer(m_owner);
 
     GetBanker()->RailRoadTransaction(player->GetPlayerId(), m_owner, ownerRailroadCount, player->GetPayRailRoadDouble());
-
-    player->PayRailRoadDouble(false);
   }
+
+  player->PayRailRoadDouble(false);
 
   return false;
 }
@@ -194,9 +194,9 @@ bool Utility::HandlePlayerVisit(Player * player)
     bool ownsBoth = DoesPlayerOwnBothUtilities(m_owner);
 
     GetBanker()->UtilityTransaction(player->GetPlayerId(), m_owner, player->GetRolledDiceTotal(), ownsBoth, player->GetPayUtilityTenTimes());
-
-    player->PayUtilityTenTimes(false);
   }
+
+  player->PayUtilityTenTimes(false);
 
   return false;
 }

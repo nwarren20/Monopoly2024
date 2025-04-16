@@ -1,11 +1,12 @@
 #include "../include/banker.hpp"
 #include <iostream>
 #include <sstream>
+#include <list>
 #include "../include/utils.hpp"
 
 Banker::Banker()
 {
-
+    m_availableTokens = { "!", "@", "#", "$", "%", "^", "&", "*" };
 }
 
 Banker::~Banker()
@@ -25,6 +26,7 @@ void Banker::WhoesPlaying()
     playerCount++;
 
     AddPlayerToGame(player1);
+    SelectToken(player1);
 
     cout << "Please enter player 2 name: ";
     cin >> name;
@@ -33,12 +35,13 @@ void Banker::WhoesPlaying()
     playerCount++;
 
     AddPlayerToGame(player2);
+    SelectToken(player2);
 
     cout << "Is there another player? enter y/n" << endl;
     string anotherPlayer;
     cin >> anotherPlayer;
 
-    while (anotherPlayer.compare("y") == 0)
+    while (anotherPlayer.compare("y") == 0 && playerCount <= 8)
     {
         cout << "Please enter player name: ";
         cin >> name;
@@ -47,9 +50,47 @@ void Banker::WhoesPlaying()
         playerCount++;
 
         AddPlayerToGame(nextPlayer);
+        SelectToken(nextPlayer);
 
         cout << "Is there another player? enter y/n" << endl;
         cin >> anotherPlayer;
+    }
+}
+
+void Banker::SelectToken(Player * player)
+{
+    bool match = false;
+
+    while(match == false)
+    {
+        cout << player->GetName() << ", Please select your Token to move around the board:" << endl;
+
+        list<string>::iterator it;
+        for (it = m_availableTokens.begin(); it != m_availableTokens.end(); it++)
+        {
+            cout << " " << *it << " ";
+        }
+
+        cout << endl;
+
+        string input = "";
+        cin >> input;
+
+        for (it = m_availableTokens.begin(); it != m_availableTokens.end() && !match; it++)
+        {
+            match |= (input.compare(*it) == 0);
+        }
+
+        if (match)
+        {
+            player->SetToken(input);
+
+            m_availableTokens.remove(input);
+        }
+        else
+        {
+            cout << "Invalid Selection, try again" << endl;
+        }
     }
 }
 
@@ -77,6 +118,25 @@ Player * Banker::GetActivePlayerForTurn(const int turn)
     }
     
     return nullptr;
+}
+
+map<string, int> Banker::GetPlayerPositions()
+{
+    map<string, int> positionMap;
+
+    for (size_t i = 0; i < m_activePlayers.size(); i++)
+    {
+        int playerId = m_activePlayers[i];
+
+        Player * player = m_allPlayers[playerId];
+
+        string token = player->GetToken();
+        int position = player->GetPosition();
+
+        positionMap[token] = position;
+    }
+
+    return positionMap;
 }
 
 void Banker::PayEachPlayer(Player * player, int amount)
@@ -140,7 +200,7 @@ void Banker::PayPerHouseAndHotel(Player * player, int perHotelCost, int perHouse
     MonopolyUtils::OutputMessage(ss.str(), 1000);
 }
 
-void Banker::UtilityTransaction(const int customerId, const int ownerId, const int diceRoll, const int bothUtilitiesOwned, const bool chance)
+void Banker::UtilityTransaction(const int customerId, const int ownerId, const int diceRoll, const bool bothUtilitiesOwned, const bool chance)
 {
     Player * customer = m_allPlayers[customerId];
     Player * owner = m_allPlayers[ownerId];

@@ -21,6 +21,7 @@ Player::Player(const string name, const int playerId)
     m_bankAccount = 1500;
     m_position = 0;
     m_initial = name.substr(0,1);
+    m_token = "";
     m_jailRolls = 0;
     m_rolledDice_1 = 0;
     m_rolledDice_2 = 0;
@@ -35,6 +36,20 @@ Player::Player(const string name, const int playerId)
 Player::~Player()
 {
 
+}
+
+void Player::SetToken(const string token)
+{
+    size_t len = token.length();
+
+    if (len == 1)
+    {
+        m_token = token;
+    }
+    else
+    {
+        cout << " Token too many characters" << endl;
+    }
 }
 
 void Player::CardTransaction(int amount)
@@ -506,7 +521,7 @@ void Player::PrintPropertyGroup(string group)
     }
 }
 
-void DrawBoardPosition(vector<BoardSpace *> & board, int & index, const int currentPosition)
+void DrawBoardPosition(vector<BoardSpace *> & board, int & index, const int currentPosition, string token)
 {
     int position = 40;
 
@@ -551,15 +566,84 @@ void DrawBoardPosition(vector<BoardSpace *> & board, int & index, const int curr
         cout << strInitial;
     }
 
-    if (position == currentPosition)
+    // print tokens
+    map<string, int> positionMap = board[position]->GetBanker()->GetPlayerPositions();
+
+    /*if(position == 0)
     {
-        cout << "_*__|";
+        for (const auto & pair : positionMap) 
+        {
+            std::cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
+        }
+    }*/
+
+    vector<pair<int, string>> groupedPositions;
+
+    for (const auto & pair : positionMap) 
+    {
+        bool found = false;
+
+        for (size_t i = 0; i < groupedPositions.size() && !found; i++)
+        {
+            if (groupedPositions[i].first == pair.second)
+            {
+                groupedPositions[i].second += pair.first;
+                found = true;
+            }
+        }
+
+        if (!found)
+        {
+            groupedPositions.push_back( make_pair(pair.second, pair.first) );
+        }
     }
-    else
+
+    /*if(position == 0)
+    {
+        for (const auto & pair : groupedPositions) 
+        {
+            std::cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
+        }
+    }*/
+
+    bool done = false;
+
+    for (size_t i = 0; i < groupedPositions.size() && !done; i++)
+    {
+        if (groupedPositions[i].first == position)
+        {
+            size_t length = groupedPositions[i].second.size();
+
+            if (length < 4)
+            {
+                cout << "_";
+            }
+
+            cout << groupedPositions[i].second;
+
+            if (length == 1)
+            {
+                cout << "__|";
+            }
+            else if (length == 2)
+            {
+                cout << "_|";
+            }
+            else
+            {
+                cout << "|";
+            }
+
+            done = true;
+        }
+    }
+
+    if (!done)
     {
         cout << "____|";
     }
 
+    // increment to next position.
     ++index;
 }
 
@@ -574,59 +658,59 @@ void Player::PrintBoardPosition(vector<BoardSpace *> & board)
 
     for(uint32_t i = 0; i < 11; i++)
     {
-        DrawBoardPosition(board, drawIndex, GetPosition());
+        DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
     }
 
     cout << endl << "| NY  |                                                     | Pacf|" << endl << "|";
-    DrawBoardPosition(board, drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
     cout << "                                                     |";
-    DrawBoardPosition(board, drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
 
     cout << endl << "|Tenn |                                                     |  NC |" << endl << "|";
-    DrawBoardPosition(board, drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
     cout << "                                                     |";
-    DrawBoardPosition(board, drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
 
     cout << endl << "| CC  |                                                     |  CC |" << endl << "|";
-    DrawBoardPosition(board, drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
     cout << "                                                     |";
-    DrawBoardPosition(board, drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
 
     cout << endl << "|StJam|                                                     | Penn|" << endl << "|";
-    DrawBoardPosition(board, drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
     cout << "                                                     |";
-    DrawBoardPosition(board, drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
 
     cout << endl << "| RR  |                                                     |  RR |" << endl << "|";
-    DrawBoardPosition(board, drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
     cout << "                                                     |";
-    DrawBoardPosition(board, drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
 
     cout << endl << "| Vir |                                                     | Chn |" << endl << "|";
-    DrawBoardPosition(board, drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
     cout << "                                                     |";
-    DrawBoardPosition(board, drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
 
     cout << endl << "|State|                                                     |ParkP|" << endl << "|";
-    DrawBoardPosition(board, drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
     cout << "                                                     |";
-    DrawBoardPosition(board, drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
          
     cout << endl << "| EC  |                                                     | LxTx|" << endl << "|";
-    DrawBoardPosition(board, drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
     cout << "                                                     |";
-    DrawBoardPosition(board, drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
 
     cout << endl << "|StCh |                                                     |Board|" << endl << "|";
-    DrawBoardPosition(board, drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
     cout << "_____________________________________________________|";
-    DrawBoardPosition(board, drawIndex, GetPosition());
+    DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
 
     cout << endl << "|Jail |Conn |Verm | Chn |Orien| RR  | InTx|Balt | CC  | Med | GO  |" << endl << "|";
 
     for(uint32_t i = 0; i < 11; i++)
     {
-        DrawBoardPosition(board, drawIndex, GetPosition());
+        DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
     }
 
     cout << endl << endl;
