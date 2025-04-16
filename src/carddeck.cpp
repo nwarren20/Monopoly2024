@@ -5,7 +5,7 @@
 
 CardDeck::CardDeck()
 {
-    m_chanceIndex = 9;
+    m_chanceIndex = 0;
     m_communityChestIndex = 0;
 
     LoadDecks();
@@ -36,11 +36,21 @@ Card CardDeck::PickupCommunityChestCard()
 void CardDeck::ReturnChanceCard(Card card)
 {
     m_chanceIndex = (m_chanceIndex + 1) % m_chanceCards.size();
+
+    if (m_chanceIndex == 0)
+    {
+        ShuffleChanceCards();
+    }
 }
 
 void CardDeck::ReturnCommunityChestCard(Card card)
 {
     m_communityChestIndex = (m_communityChestIndex + 1) % m_communityChestCards.size();
+
+    if (m_communityChestIndex == 0)
+    {
+        ShuffleCommunityChestCards();
+    }
 }
 
 void CardDeck::ShuffleChanceCards()
@@ -145,6 +155,8 @@ void CardDeck::LoadChanceDeck()
     m_chanceCards.push_back(card_14);
     m_chanceCards.push_back(card_15);
     m_chanceCards.push_back(card_16);
+
+    ShuffleChanceCards();
 }
 
 void CardDeck::LoadCommunityChestCards()
@@ -231,4 +243,6 @@ void CardDeck::LoadCommunityChestCards()
     m_communityChestCards.push_back(card_14);
     m_communityChestCards.push_back(card_15);
     m_communityChestCards.push_back(card_16);
+
+    ShuffleCommunityChestCards();
 }

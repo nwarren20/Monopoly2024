@@ -6,6 +6,7 @@
 #include <thread>
 #include <chrono>
 #include <sstream>
+#include <algorithm>
 #include "../include/utils.hpp"
 
 using namespace std;
@@ -101,9 +102,10 @@ int Player::RollDice(int gaffRoll)
 
     PrintDiceRoll(m_rolledDice_2);
 
-    cout << m_name << " rolled a " << GetRolledDiceTotal() << endl;
+    std::stringstream ss;
+    ss << m_name << " rolled a " << GetRolledDiceTotal();
 
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    MonopolyUtils::OutputMessage(ss.str(), 1000);
 
     if (m_jailRolls > 0)
     {
@@ -345,8 +347,12 @@ bool Player::BuyUtility(string name)
     if (m_bankAccount >= price)
     {
         m_bankAccount -= price;
-        pair<string, string> newProp = make_pair(name, "Utility");
-        m_properties.push_back(newProp);
+
+        pair<string, string> newGroup = make_pair(name, "Utility");
+        m_propertyGroups.push_back(newGroup);
+
+        pair<string, int> newPrice = make_pair(name, price);
+        m_propertyPrice.push_back(newPrice);
     }
     else
     {
@@ -364,8 +370,12 @@ bool Player::BuyRailRoad(string name)
     if (m_bankAccount >= price)
     {
         m_bankAccount -= price;
-        pair<string, string> newProp = make_pair(name, "RailRoad");
-        m_properties.push_back(newProp);
+
+        pair<string, string> newGroup = make_pair(name, "RailRoad");
+        m_propertyGroups.push_back(newGroup);
+
+        pair<string, int> newPrice = make_pair(name, price);
+        m_propertyPrice.push_back(newPrice);
     }
     else
     {
@@ -376,13 +386,17 @@ bool Player::BuyRailRoad(string name)
     return true;
 }
 
-bool Player::BuyProperty(int cost, string prop, string group)
+bool Player::BuyProperty(int price, string prop, string group)
 {
-    if (m_bankAccount >= cost)
+    if (m_bankAccount >= price)
     {
-        m_bankAccount -= cost;
-        pair<string, string> newProp = make_pair(prop, group);
-        m_properties.push_back(newProp);
+        m_bankAccount -= price;
+
+        pair<string, string> newGroup = make_pair(prop, group);
+        m_propertyGroups.push_back(newGroup);
+
+        pair<string, int> newPrice = make_pair(prop, price);
+        m_propertyPrice.push_back(newPrice);
     }
     else
     {
@@ -469,12 +483,134 @@ void Player::CollectGeneric(const int amount)
     m_bankAccount += amount;
 }
 
+void Player::MortgageMenu()
+{
+    // Sort the prices
+    std::sort(m_propertyPrice.begin(), m_propertyPrice.end(), [](const auto& a, const auto& b) {
+        return a.second < b.second;
+    });
+
+    vector< pair<string, int> > eligibleForMortgage;
+
+    for (auto property : m_propertyPrice)
+    {
+        if (IsPropertyMortgaged(property.first) == false)
+        {
+            int mortgageValue = property.second / 2;
+            eligibleForMortgage.push_back( make_pair(property.first, mortgageValue) );
+        }
+    }
+
+    cout << "==============================================\n";
+    cout << " Mortgage Menu\n";
+    cout << "  Select property to mortagage\n";
+
+    int index = 1;
+
+    for (auto property : eligibleForMortgage)
+    {
+        cout << "  " << index++ << ". " << property.first << " for $" << property.second << endl;
+    }
+
+    if (eligibleForMortgage.size() == 0)
+    {
+        cout << "  All properties are currently mortgaged" << endl;
+    }
+
+    cout << "  " << index << ". to exit" << endl;
+
+    int input = 0;
+    cin >> input;
+
+    while(input < 1 || input > index)
+    {
+        cout << " invalid entry" << endl;
+
+        cin >> input;
+    }
+
+    if (input != index && input > 0 && input <= (int)eligibleForMortgage.size())
+    {
+        index = input - 1;
+
+        cout << " You chose to mortage " << eligibleForMortgage[index].first << "for $" << eligibleForMortgage[index].second << " ? (y/n)" << endl;
+
+        string inputStr = "";
+        cin >> inputStr;
+
+        while (inputStr.compare("y") != 0 && inputStr.compare("n") != 0)
+        {
+            cout << "invalid entry" << endl;
+            cin >> inputStr;
+        }
+
+        if (inputStr.compare("y") == 0)
+        {
+            MortgageProperty(eligibleForMortgage[index].first, eligibleForMortgage[index].second);
+        }
+    }
+}
+
+void Player::MortgageProperty(const string propertyName, int value)
+{
+    // write the property as mortgaged
+    for (auto & property : m_propertyPrice)
+    {
+        if (property.first.compare(propertyName) == 0)
+        {
+            property.first = string("(M)" + propertyName);
+        }
+    }
+
+    for (auto & property : m_propertyGroups)
+    {
+        if (property.first.compare(propertyName) == 0)
+        {
+            property.first = string("(M)" + propertyName);
+        }
+    }
+
+    m_bankAccount += value;
+
+    stringstream ss;
+    ss << " You have successfully mortgaged " << propertyName << " for $" << value;
+
+    MonopolyUtils::OutputMessage(ss.str(), 1000);
+}
+
+bool Player::IsPropertyMortgaged(const string propertyName)
+{
+    bool mortgaged = false;
+
+    if(propertyName.compare(0,3,"(M)") == 0)
+    {
+        return true;
+    }
+
+    string mortgagedName = string("(M)" + propertyName);
+
+    for (auto property : m_propertyPrice)
+    {
+        if (property.first.compare(mortgagedName) == 0)
+        {
+            mortgaged = true;
+        }
+    }
+
+    return mortgaged;
+}
+
 void Player::OutputPlayerStats()
 {
-    cout << "Player Stats: " << endl;
-    cout << " bank account: " << m_bankAccount << endl;
+    cout << GetName() << " Player Stats: " << endl;
+    cout << " bank account: $" << m_bankAccount << endl;
 
-    if (m_properties.size() > 0)
+    if(HasGetOutOfJailFreeCard())
+    {
+        cout << " *Get Out Of Jail Free Card*" << endl;
+    }
+
+    if (m_propertyGroups.size() > 0)
     {
         cout << " properties: " << endl;
 
@@ -495,11 +631,11 @@ void Player::PrintPropertyGroup(string group)
 {
     vector<string> names;
 
-    for (int i = 0; i < m_properties.size(); i++)
+    for (int i = 0; i < m_propertyGroups.size(); i++)
     {
-        if (m_properties[i].second.compare(group) == 0)
+        if (m_propertyGroups[i].second.compare(group) == 0)
         {
-            names.push_back(m_properties[i].first);
+            names.push_back(m_propertyGroups[i].first);
         }
     }
 
@@ -569,14 +705,6 @@ void DrawBoardPosition(vector<BoardSpace *> & board, int & index, const int curr
     // print tokens
     map<string, int> positionMap = board[position]->GetBanker()->GetPlayerPositions();
 
-    /*if(position == 0)
-    {
-        for (const auto & pair : positionMap) 
-        {
-            std::cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
-        }
-    }*/
-
     vector<pair<int, string>> groupedPositions;
 
     for (const auto & pair : positionMap) 
@@ -597,14 +725,6 @@ void DrawBoardPosition(vector<BoardSpace *> & board, int & index, const int curr
             groupedPositions.push_back( make_pair(pair.second, pair.first) );
         }
     }
-
-    /*if(position == 0)
-    {
-        for (const auto & pair : groupedPositions) 
-        {
-            std::cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
-        }
-    }*/
 
     bool done = false;
 

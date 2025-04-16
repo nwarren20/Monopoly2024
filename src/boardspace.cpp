@@ -51,7 +51,7 @@ bool Property::HandlePlayerVisit(Player * player)
 
     if (buy.compare("y") == 0)
     {
-      bool success = player->BuyProperty(m_purchasePrice, GetName(), GetGroupName());
+      bool success = GetBanker()->BuyPropertyTransaction(player, m_purchasePrice, GetName(), GetGroupName());
 
       if (success)
       {
@@ -68,7 +68,9 @@ bool Property::HandlePlayerVisit(Player * player)
   {
     bool monopoly = DoesOwnerHaveMonopoly(m_owner);
 
-    GetBanker()->RentTransaction(player->GetPlayerId(), m_owner, m_baseRent, GetGroupName(), monopoly);
+    bool mortgaged = GetBanker()->IsPropertyMortgaged(GetName(), m_owner);
+
+    GetBanker()->RentTransaction(player->GetPlayerId(), m_owner, m_baseRent, GetGroupName(), monopoly, mortgaged);
   }
 
   return false;
@@ -131,7 +133,9 @@ bool RailRoad::HandlePlayerVisit(Player * player)
   {
     const int ownerRailroadCount = GetRailroadsOwnedByPlayer(m_owner);
 
-    GetBanker()->RailRoadTransaction(player->GetPlayerId(), m_owner, ownerRailroadCount, player->GetPayRailRoadDouble());
+    bool mortgaged = GetBanker()->IsPropertyMortgaged(GetName(), m_owner);
+
+    GetBanker()->RailRoadTransaction(player->GetPlayerId(), m_owner, ownerRailroadCount, player->GetPayRailRoadDouble(), mortgaged);
   }
 
   player->PayRailRoadDouble(false);
@@ -193,7 +197,9 @@ bool Utility::HandlePlayerVisit(Player * player)
   {
     bool ownsBoth = DoesPlayerOwnBothUtilities(m_owner);
 
-    GetBanker()->UtilityTransaction(player->GetPlayerId(), m_owner, player->GetRolledDiceTotal(), ownsBoth, player->GetPayUtilityTenTimes());
+    bool mortgaged = GetBanker()->IsPropertyMortgaged(GetName(), m_owner);
+
+    GetBanker()->UtilityTransaction(player->GetPlayerId(), m_owner, player->GetRolledDiceTotal(), ownsBoth, player->GetPayUtilityTenTimes(), mortgaged);
   }
 
   player->PayUtilityTenTimes(false);

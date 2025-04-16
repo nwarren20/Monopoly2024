@@ -124,7 +124,7 @@ int main()
             {
                 if (playerThisTurn->OwnsProperty())
                 {
-                    MonopolyUtils::OutputMessage("Not implemented yet", 0);
+                    playerThisTurn->MortgageMenu();
                 }
                 else
                 {

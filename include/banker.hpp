@@ -13,11 +13,13 @@ class Banker
     Banker();
     ~Banker();
 
-    void RentTransaction(const int renterId, const int ownerId, const int amount, string group, bool monopoly);
+    void RentTransaction(const int renterId, const int ownerId, const int amount, string group, bool monopoly, bool mortgaged);
 
-    void RailRoadTransaction(const int passangerId, const int ownerId, const int railRoadsOwned, const bool chance);
+    void RailRoadTransaction(const int passangerId, const int ownerId, const int railRoadsOwned, const bool chance, bool mortgaged);
 
-    void UtilityTransaction(const int customerId, const int ownerId, const int diceRoll, const bool bothUtilitiesOwned, const bool chance);
+    void UtilityTransaction(const int customerId, const int ownerId, const int diceRoll, const bool bothUtilitiesOwned, const bool chance, bool mortgaged);
+
+    bool BuyPropertyTransaction(Player * player, const int price, const string property, const string group);
 
     void WhoesPlaying();
 
@@ -48,6 +50,8 @@ class Banker
     void PayPerHouseAndHotel(Player * player, int perHotelCost, int perHouseCost);
 
     map<string, int> GetPlayerPositions();
+
+    bool IsPropertyMortgaged(string properyName, int ownerId);
 
   private:
 

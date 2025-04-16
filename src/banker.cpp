@@ -37,10 +37,18 @@ void Banker::WhoesPlaying()
     AddPlayerToGame(player2);
     SelectToken(player2);
 
-    cout << "Is there another player? enter y/n" << endl;
+    bool valid = false;
     string anotherPlayer;
-    cin >> anotherPlayer;
 
+    while(!valid)
+    {
+        cout << "Is there another player? enter y/n" << endl;
+        
+        cin >> anotherPlayer;
+
+        valid = (anotherPlayer.compare("y") == 0 || anotherPlayer.compare("n") == 0);
+    }
+    
     while (anotherPlayer.compare("y") == 0 && playerCount <= 8)
     {
         cout << "Please enter player name: ";
@@ -52,8 +60,16 @@ void Banker::WhoesPlaying()
         AddPlayerToGame(nextPlayer);
         SelectToken(nextPlayer);
 
-        cout << "Is there another player? enter y/n" << endl;
-        cin >> anotherPlayer;
+        valid = false;
+
+        while(!valid)
+        {
+            cout << "Is there another player? enter y/n" << endl;
+            
+            cin >> anotherPlayer;
+
+            valid = (anotherPlayer.compare("y") == 0 || anotherPlayer.compare("n") == 0);
+        }
     }
 }
 
@@ -200,14 +216,17 @@ void Banker::PayPerHouseAndHotel(Player * player, int perHotelCost, int perHouse
     MonopolyUtils::OutputMessage(ss.str(), 1000);
 }
 
-void Banker::UtilityTransaction(const int customerId, const int ownerId, const int diceRoll, const bool bothUtilitiesOwned, const bool chance)
+void Banker::UtilityTransaction(const int customerId, const int ownerId, const int diceRoll, const bool bothUtilitiesOwned, const bool chance, bool mortgaged)
 {
     Player * customer = m_allPlayers[customerId];
     Player * owner = m_allPlayers[ownerId];
 
     int bill = diceRoll * 4;
 
-    cout << "Property is owned by " << owner->GetName() << endl;
+    std::stringstream ss;
+    ss << "Property is owned by " << owner->GetName();
+
+    MonopolyUtils::OutputMessage(ss.str(), 1000);
 
     if (chance)
     {
@@ -215,14 +234,14 @@ void Banker::UtilityTransaction(const int customerId, const int ownerId, const i
 
         while(input.compare("r") != 0)
         {
-            cout << "enter 'r' to roll dice for billed amount" << endl;
+            MonopolyUtils::OutputMessage("enter 'r' to roll dice for billed amount", 0);
             cin >> input;
         }
         
         int diceTotal = customer->RollDice();
         bill = diceTotal * 10;
 
-        std::stringstream ss;
+        ss = stringstream("");
         ss << owner->GetName() << " your bill is tens times the amount on the dice: $" << bill;
 
         MonopolyUtils::OutputMessage(ss.str(), 1000);
@@ -232,29 +251,40 @@ void Banker::UtilityTransaction(const int customerId, const int ownerId, const i
     {
         bill = diceRoll * 10;
 
-        std::stringstream ss;
+        ss = stringstream("");
         ss << owner->GetName() << " owns both utilities, your bill is tens times the amount on the dice: $" << bill;
 
         MonopolyUtils::OutputMessage(ss.str(), 1000);
     }
     else
     {
-        std::stringstream ss;
+        ss = stringstream("");
         ss << owner->GetName() << " owns one utility, your bill is four times the amount on the dice: $" << bill;
 
         MonopolyUtils::OutputMessage(ss.str(), 1000);
     }
 
-    int paid = customer->PayRent(bill);
-    owner->CollectRent(paid);
+    if (mortgaged)
+    {
+        ss = stringstream("");
+        ss << "Property is currently mortgaged so rent can not be collected.\nYou would have owed $" << bill;
 
-    std::stringstream ss;
-    ss << owner->GetName() << " collected $" << paid;
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
+    }
+    else
+    {
+        int paid = customer->PayRent(bill);
+        owner->CollectRent(paid);
 
-    MonopolyUtils::OutputMessage(ss.str(), 1000);
+        ss = stringstream("");
+        ss << owner->GetName() << " collected $" << paid;
+
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
+    }
+    
 }
 
-void Banker::RailRoadTransaction(const int passangerId, const int ownerId, const int railRoadsOwned, const bool chance)
+void Banker::RailRoadTransaction(const int passangerId, const int ownerId, const int railRoadsOwned, const bool chance, bool mortgaged)
 {
     Player * customer = m_allPlayers[passangerId];
     Player * owner = m_allPlayers[ownerId];
@@ -306,40 +336,85 @@ void Banker::RailRoadTransaction(const int passangerId, const int ownerId, const
         MonopolyUtils::OutputMessage(ss.str(), 1000);
     }
 
-    stringstream ss;
-    ss << "Your ticket price was $" << ticketPrice;
-    MonopolyUtils::OutputMessage(ss.str(), 1000);
+    if (mortgaged)
+    {
+        stringstream ss = stringstream("");
+        ss << "Property is currently mortgaged so rent can not be collected.\nYou would have owed $" << ticketPrice;
 
-    int paid = customer->PayRent(ticketPrice);
-    owner->CollectRent(paid);
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
+    }
+    else
+    {
+        stringstream ss;
+        ss << "Your ticket price was $" << ticketPrice;
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
 
-    ss = stringstream("");
-    ss << owner->GetName() << " collected $" << paid;
-    MonopolyUtils::OutputMessage(ss.str(), 1000);
+        int paid = customer->PayRent(ticketPrice);
+        owner->CollectRent(paid);
+
+        ss = stringstream("");
+        ss << owner->GetName() << " collected $" << paid;
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
+    }
 }
 
-void Banker::RentTransaction(const int renterId, const int ownerId, const int amount, string group, bool monopoly)
+void Banker::RentTransaction(const int renterId, const int ownerId, const int amount, string group, bool monopoly, bool mortgaged)
 {
     Player * renter = m_allPlayers[renterId];
     Player * owner = m_allPlayers[ownerId];
 
     int rent = amount;
 
-    cout << "Property is owned by " << owner->GetName() << endl;
+    stringstream ss;
+    ss << "Property is owned by " << owner->GetName();
+
+    MonopolyUtils::OutputMessage(ss.str(), 1000);
 
     if (monopoly)
     {
         rent *= 2;
         
-        cout << owner->GetName() << " has a monopoly on " << group << " so rent is doubled from $" << amount << " to $" << rent << endl;
+        ss = stringstream("");
+        ss << owner->GetName() << " has a monopoly on " << group << " so rent is doubled from $" << amount << " to $" << rent;
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
     }
 
-    cout << "You owe " << owner->GetName() << " rent of $" << rent << endl;
+    if (mortgaged)
+    {
+        ss = stringstream("");
+        ss << "Property is currently mortgaged so rent can not be collected.\nYou would have owed $" << rent;
 
-    int paid = renter->PayRent(rent);
-    owner->CollectRent(paid);
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
+    }
+    else
+    {
+        ss = stringstream("");
+        ss << "You owe " << owner->GetName() << " rent of $" << rent;
 
-    cout << owner->GetName() << " collected $" << paid << endl;
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
+
+        int paid = renter->PayRent(rent);
+        owner->CollectRent(paid);
+
+        ss = stringstream("");
+        ss << owner->GetName() << " collected $" << paid;
+
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
+    }
+}
+
+bool Banker::IsPropertyMortgaged(string properyName, int ownerId)
+{
+    Player * owner = m_allPlayers[ownerId];
+
+    return owner->IsPropertyMortgaged(properyName);
+}
+
+bool Banker::BuyPropertyTransaction(Player * player, const int price, const string property, const string group)
+{
+    bool success = player->BuyProperty(price, property, group);
+
+    return success;
 }
 
 bool Banker::DoesPlayerOwnMonopoly(Player * player, string group)

@@ -89,6 +89,12 @@ class Player
 
     void CardTransaction(int amount);
 
+    void MortgageMenu();
+
+    void MortgageProperty(const string propertyName, int value);
+
+    bool IsPropertyMortgaged(const string propertyName);
+
     int GetPosition() {
         return m_position;
     }
@@ -110,7 +116,7 @@ class Player
     }
 
     bool OwnsProperty() {
-        return !m_properties.empty();
+        return !m_propertyGroups.empty();
     }
 
     bool OwnsMonopoly() {
@@ -139,5 +145,6 @@ class Player
     int m_getOutOfJailFreeCardCount;
     bool m_payRailRoadDouble;
     bool m_payUtilityTenTimes;
-    vector<pair<string, string> > m_properties;
+    vector<pair<string, string> > m_propertyGroups;
+    vector<pair<string, int> > m_propertyPrice;
 };
