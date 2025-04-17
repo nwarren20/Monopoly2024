@@ -52,7 +52,7 @@ int main()
             int position = playerThisTurn->GetPosition();
             string space = gameBoard[position]->GetName();
 
-            cout << "==============================================================\n";
+            cout << "===================================================================\n";
             cout << playerThisTurn->GetName() << " is currently on " << space << endl;
             playerThisTurn->OutputPlayerStats();
 

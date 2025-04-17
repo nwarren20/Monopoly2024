@@ -10,11 +10,11 @@ using namespace std;
 
     void MonopolyUtils::OutputMessage(string message, int delay)
     {
-        cout << "=============================================\n\n";
+        cout << "===================================================================\n\n";
 
         cout << message << endl << endl;
 
-        cout << "=============================================\n\n";
+        cout << "===================================================================\n\n";
 
         std::this_thread::sleep_for(std::chrono::milliseconds(delay));
     }
@@ -106,9 +106,9 @@ using namespace std;
     
     void MonopolyUtils::CreateGreenGroup(vector<Property *> & group)
     {
-        Property * Pacific = new Property("Pacific Avenue", 31, "Green", 280, Rents::pacificRents);
-        Property * NC = new Property("North Carolina Avenue", 32, "Green", 280, Rents::northcarolinaRents);
-        Property * Penn = new Property("Pennsylvania Avenue", 34, "Green", 280, Rents::pennsylvaniaRents);
+        Property * Pacific = new Property("Pacific Avenue", 31, "Green", 300, Rents::pacificRents);
+        Property * NC = new Property("North Carolina Avenue", 32, "Green", 300, Rents::northcarolinaRents);
+        Property * Penn = new Property("Pennsylvania Avenue", 34, "Green", 320, Rents::pennsylvaniaRents);
     
         group.push_back(Pacific);
         group.push_back(NC);

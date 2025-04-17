@@ -501,7 +501,7 @@ void Player::MortgageMenu()
         }
     }
 
-    cout << "==============================================\n";
+    cout << "===================================================================\n";
     cout << " Mortgage Menu\n";
     cout << "  Select property to mortagage\n";
 
