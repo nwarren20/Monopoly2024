@@ -33,5 +33,7 @@ class MonopolyUtils
     static void CreateRailRoadGroup(vector<RailRoad *> & group);
 
     static void LoadBoard(vector<BoardSpace *> & gameBoard, CardDeck * cardDeck);
+
+    static void PringWelcomeMessage();
 };
 

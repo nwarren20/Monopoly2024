@@ -74,6 +74,8 @@
         "xloctime": "cpp",
         "xmemory": "cpp",
         "xtr1common": "cpp",
-        "memory_resource": "cpp"
+        "memory_resource": "cpp",
+        "map": "cpp",
+        "xtree": "cpp"
     }
 }

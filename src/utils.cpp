@@ -225,3 +225,24 @@ using namespace std;
         gameBoard.push_back( new Tax("Luxury Tax", 38, 75) );
         gameBoard.push_back( blueGroup[1] );
     }
+
+    void MonopolyUtils::PringWelcomeMessage()
+    {
+        cout << 
+        "______________________________________________________________________________________________" << endl <<
+        "|                                                                                             " << endl <<
+        "|       M             M             OOOOOO        N           NNN        OOOOOO          " << endl <<
+        "|      MMM           MMM         OOOOOOOOOOOO     NNN         NNN     OOOOOOOOOOOO       " << endl <<
+        "|     MMMMM         MMMMM      OOOO        OOOO   NNNNN       NNN   OOOO        OOOO     " << endl <<
+        "|     MMMMMM       MMMMMM     OOO            OOO  NNN NNN     NNN  OOO            OOO    " << endl <<
+        "|    MMM  MMM     MMM  MMM   OOO              OOO NNN   NNN   NNN OOO              OOO   " << endl <<
+        "|    MMM   MMM   MMM   MMM   OOO              OOO NNN     NNN NNN OOO              OOO   " << endl <<
+        "|   MMM     MMM MMM     MMM   OOO            OOO  NNN       NNNNN  OOO            OOO    " << endl <<
+        "|   MMM      MMMMM      MMM    OOOO        OOOO   NNN         NNN   OOOO        OOOO     " << endl <<
+        "|  MMM        MMM        MMM     OOOOOOOOOOOO     NNN          NN     OOOOOOOOOOOO       " << endl <<
+        "|  MMM         M         MMM        OOOOOO        NNN           N        OOOOOO          " << endl <<
+        "|                                                                                              " << endl <<
+        "|______________________________________________________________________________________________" << endl << endl;
+
+
+    }

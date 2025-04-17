@@ -15,9 +15,13 @@ class Banker
 
     void RentTransaction(const int renterId, const int ownerId, const int amount, string group, bool monopoly, bool mortgaged);
 
-    void RailRoadTransaction(const int passangerId, const int ownerId, const int railRoadsOwned, const bool chance, bool mortgaged);
+    void RailRoadTransaction(const int passangerId, const int ownerId, int ticketPrice, const int railRoadsOwned, const bool chance, bool mortgaged);
 
     void UtilityTransaction(const int customerId, const int ownerId, const int diceRoll, const bool bothUtilitiesOwned, const bool chance, bool mortgaged);
+
+    void TaxTransaction(const int playerId, const int amount);
+
+    void CardTransaction(const int playerId, const int amount);
 
     bool BuyPropertyTransaction(Player * player, const int price, const string property, const string group);
 
@@ -39,7 +43,7 @@ class Banker
 
     int GetNumActivePlayers();
 
-    bool DoesPlayerOwnMonopoly(Player * player, string group);
+    //bool DoesPlayerOwnMonopoly(Player * player, string group);
 
     void GivePlayOptions(Player * player);
 
@@ -56,6 +60,8 @@ class Banker
   private:
 
     int GetPlayerActiveIndex(const int playerId);
+
+    void CheckPlayerForBankrupcy(const int playerId, int paid, int owed);
 
     vector<Player *> m_allPlayers;
 

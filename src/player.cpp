@@ -318,31 +318,30 @@ bool Player::IsTurnOver(bool playerJailedToBeginTurn)
     return true;
 }
 
-bool Player::PayTax(const int fee)
+int Player::PayTax(const int fee)
 {
-    bool success = true;
+    int paid = fee;
 
-    if (fee <= m_bankAccount)
+    if (m_bankAccount < fee)
     {
-        m_bankAccount -= fee;
-        stringstream ss;
-        ss << "Paid tax of $" << fee;
-        MonopolyUtils::OutputMessage(ss.str(), 1000);
-    }
-    else
-    {
-        // todo: make player come up with money.
-        m_bankAccount = -1;
-        cout << "Cannot afford to pay taxes" << endl;
-        success = false;
+        paid = Liquidate(fee);
     }
 
-    return success;
+    stringstream ss;
+    ss << "Paid tax of $" << paid;
+
+    MonopolyUtils::OutputMessage(ss.str(), 1000);
+
+    m_bankAccount -= paid;
+
+    return paid;
 }
 
 bool Player::BuyUtility(string name)
 {
     int price = 150;
+
+    MortgageToBuyProperty(price);
 
     if (m_bankAccount >= price)
     {
@@ -356,7 +355,6 @@ bool Player::BuyUtility(string name)
     }
     else
     {
-        cout << "Sorry, not enough cash to buy Utility" << endl;
         return false;
     }
 
@@ -366,6 +364,8 @@ bool Player::BuyUtility(string name)
 bool Player::BuyRailRoad(string name)
 {
     int price = 200;
+
+    MortgageToBuyProperty(price);
 
     if (m_bankAccount >= price)
     {
@@ -379,7 +379,6 @@ bool Player::BuyRailRoad(string name)
     }
     else
     {
-        cout << "Sorry, not enough cash to buy railroad" << endl;
         return false;
     }
 
@@ -388,6 +387,8 @@ bool Player::BuyRailRoad(string name)
 
 bool Player::BuyProperty(int price, string prop, string group)
 {
+    MortgageToBuyProperty(price);
+
     if (m_bankAccount >= price)
     {
         m_bankAccount -= price;
@@ -400,11 +401,53 @@ bool Player::BuyProperty(int price, string prop, string group)
     }
     else
     {
-        cout << "Sorry, not enough cash to buy property" << endl;
         return false;
     }
 
     return true;
+}
+
+void Player::MortgageToBuyProperty(const int price)
+{
+    bool done = false;
+
+    while (m_bankAccount < price && !done)
+    {
+        int difference = price - m_bankAccount;
+
+        stringstream ss;
+        ss << "You do not have enough cash to buy property, you need $" << difference << " more to buy.";
+
+        if (OwnsProperty() == true)
+        {
+            ss << "\nWould you like to mortgage your current property to buy this property? y/n";
+        }
+
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
+
+        if (OwnsProperty() == true)
+        {
+            string input = "";
+
+            while (input.compare("y") != 0 && input.compare("n") != 0)
+            {
+                cin >> input;
+
+                if (input.compare("y") == 0)
+                {
+                    MortgageMenu();
+                }
+                else
+                {
+                    done = true;
+                }
+            }
+        }
+        else
+        {
+            done = true;
+        }
+    }
 }
 
 int Player::PayRent(const int amount)
@@ -428,7 +471,11 @@ int Player::PayRent(const int amount)
             }
             else
             {
-                paid = Liquidate(amount);
+                int owe = amount - m_bankAccount;
+
+                paid = Liquidate(owe);
+
+                paid = amount;
             }
 
             m_bankAccount -= paid;
@@ -453,7 +500,11 @@ int Player::PayGeneric(const int amount)
     }
     else
     {
-        paid = Liquidate(amount);
+        int owe = amount - m_bankAccount;
+
+        paid = Liquidate(owe);
+
+        paid = amount;
     }
 
     m_bankAccount -= paid;
@@ -463,14 +514,29 @@ int Player::PayGeneric(const int amount)
 
 int Player::Liquidate(const int target)
 {
-    cout << "you do not have enought cash pay rent, you must liquidate assets for $" << target << endl;
+    cout << "you do not have enought cash to pay, you must liquidate assets for $" << target << endl;
 
-    //while (m_bankAccount < target)
+    while (m_bankAccount < target)
     {
-        // Mortgage / Sell houses / trade
+        if (GetNetWorth() < target)
+        {
+            stringstream ss;
+            ss << "You have gone broke, you are out of the game!";
+
+            MonopolyUtils::OutputMessage(ss.str(), 3000);
+
+            return m_bankAccount;
+        }
+
+        stringstream ss;
+        ss << "Mortgage Propery to raise cash";
+
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
+
+        MortgageMenu();
     }
 
-    return m_bankAccount;
+    return target;
 }
     
 void Player::CollectRent(const int amount)
@@ -524,6 +590,8 @@ void Player::MortgageMenu()
 
     while(input < 1 || input > index)
     {
+        input = 0;
+
         cout << " invalid entry" << endl;
 
         cin >> input;
@@ -570,7 +638,7 @@ void Player::MortgageProperty(const string propertyName, int value)
         }
     }
 
-    m_bankAccount += value;
+    CollectGeneric(value);
 
     stringstream ss;
     ss << " You have successfully mortgaged " << propertyName << " for $" << value;
@@ -600,14 +668,352 @@ bool Player::IsPropertyMortgaged(const string propertyName)
     return mortgaged;
 }
 
-void Player::OutputPlayerStats()
+bool Player::HasMortgagedProperty()
 {
+    for (auto property : m_propertyPrice)
+    {
+        if (IsPropertyMortgaged(property.first))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void Player::UnMortgageMenu()
+{
+    // Sort the prices
+    std::sort(m_propertyPrice.begin(), m_propertyPrice.end(), [](const auto& a, const auto& b) {
+        return a.second < b.second;
+    });
+
+    vector< pair<string, int> > eligibleForUnMortgage;
+
+    for (auto property : m_propertyPrice)
+    {
+        if (IsPropertyMortgaged(property.first) == true)
+        {
+            int unMortgagePrice = property.second / 2;
+            int interest = unMortgagePrice / 10;
+            cout << "Interest = " << interest << endl;
+            unMortgagePrice += interest;
+            eligibleForUnMortgage.push_back( make_pair(property.first, unMortgagePrice) );
+        }
+    }
+
+    cout << "===================================================================\n";
+    cout << " UnMortgage Menu\n";
+    cout << "  Select property to mortagage\n";
+
+    int index = 1;
+
+    for (auto property : eligibleForUnMortgage)
+    {
+        cout << "  " << index++ << ". " << property.first << " price $" << property.second << endl;
+    }
+
+    if (eligibleForUnMortgage.size() == 0)
+    {
+        cout << "  All properties are currently unmortgaged" << endl;
+    }
+
+    cout << "  " << index << ". to exit" << endl;
+
+    int input = 0;
+    cin >> input;
+
+    while(input < 1 || input > index)
+    {
+        input = 0;
+
+        cout << " invalid entry" << endl;
+
+        cin >> input;
+    }
+
+    if (input != index && input > 0 && input <= (int)eligibleForUnMortgage.size())
+    {
+        index = input - 1;
+
+        cout << " You chose to unmortage " << eligibleForUnMortgage[index].first << "for a cost $" << eligibleForUnMortgage[index].second << " ? (y/n)" << endl;
+
+        string inputStr = "";
+        cin >> inputStr;
+
+        while (inputStr.compare("y") != 0 && inputStr.compare("n") != 0)
+        {
+            cout << "invalid entry" << endl;
+            cin >> inputStr;
+        }
+
+        if (inputStr.compare("y") == 0)
+        {
+            UnMortgageProperty(eligibleForUnMortgage[index].first, eligibleForUnMortgage[index].second);
+        }
+    }
+}
+
+void Player::UnMortgageProperty(const string propertyName, int value)
+{
+    int paid = PayGeneric(value);
+
+    if (paid == value)
+    {
+        // write the property as unmortgaged
+        for (auto & property : m_propertyPrice)
+        {
+            if (property.first.compare(propertyName) == 0)
+            {
+                if (property.first.compare(0,3,"(M)") == 0)
+                {
+                    string unMortgageName = property.first.substr(3);
+
+                    property.first = unMortgageName;
+                }
+            }
+        }
+
+        for (auto & property : m_propertyGroups)
+        {
+            if (property.first.compare(propertyName) == 0)
+            {
+                if (property.first.compare(0,3,"(M)") == 0)
+                {
+                    string unMortgageName = property.first.substr(3);
+
+                    property.first = unMortgageName;
+                }
+            }
+        }
+
+        stringstream ss;
+        ss << "You have successfully unmortgaged " << propertyName << " for a cost $" << paid;
+
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
+
+    }
+    else
+    {
+        stringstream ss;
+        ss << "You did not have enough money to unmortgage" << propertyName;
+
+        CollectGeneric(paid);
+
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
+    }
+}
+
+int Player::GetNetWorth()
+{
+    int assets = 0;
+
+    for (auto & property : m_propertyPrice)
+    {
+        if (IsPropertyMortgaged(property.first) == false)
+        {
+            assets += (property.second / 2);
+        }
+    }
+
+    int netWorth = m_bankAccount + assets;
+
+    return netWorth;
+}
+
+int Player::GetRentPotential(vector<BoardSpace *> & board)
+{
+    int rents = 0;
+
+    for ( auto space : board)
+    {
+        if (space->GetType() == BoardSpaceType::property)
+        {
+            int owner = reinterpret_cast<Property *>(space)->GetOwner();
+
+            if (owner == GetPlayerId())
+            {
+                rents += reinterpret_cast<Property *>(space)->GetRent();
+            }
+        }
+        else if (space->GetType() == BoardSpaceType::railroad)
+        {
+            int owner = reinterpret_cast<RailRoad *>(space)->GetOwner();
+
+            if (owner == GetPlayerId())
+            {
+                rents += reinterpret_cast<RailRoad *>(space)->GetTicketPrice();
+            }
+        }   
+    }
+
+    return rents;
+}
+
+void Player::BuyHousesAndHotels(vector<BoardSpace *> & board)
+{
+    PlayerCheckForMonopolies(board);
+
+    if (m_monopolies.size() == 0)
+    {
+        stringstream ss;
+        ss << "No Monopolies found";
+
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
+
+        return;
+    }
+
+    int index = 1;
+
+    cout << "===================================================================\n";
+    cout << " House/Hotel Menu\n";
+    cout << "  Select property group to buy houses/hotels.\n";
+
+    for (auto group : m_monopolies)
+    {
+        cout << "  " << index++ << ".  " << group << endl;
+    }
+
+    cout << "  " << index << ". to exit" << endl;
+
+    int input = 0;
+    cin >> input;
+
+    while(input < 1 || input > index)
+    {
+        input = 0;
+
+        cout << " invalid entry" << endl;
+
+        cin >> input;
+    }
+
+    if (input != index && input > 0 && input <= (int)m_monopolies.size())
+    {
+        index = input - 1;
+
+        cout << " You chose to buy houses for " << m_monopolies[index] << " ? (y/n)" << endl;
+
+        string inputStr = "";
+        cin >> inputStr;
+
+        while (inputStr.compare("y") != 0 && inputStr.compare("n") != 0)
+        {
+            cout << "invalid entry" << endl;
+            cin >> inputStr;
+        }
+
+        if (inputStr.compare("y") == 0)
+        {
+            cout << "how many houses do you want to buy?";
+
+            int count = 0;
+
+            cin >> count;
+
+            if (count < 12)
+            {
+                AddHousesToGroup(board, m_monopolies[index], count);
+            }
+        }
+    }
+}
+
+void Player::AddHousesToGroup(vector<BoardSpace *> & board, string group, int numHouses)
+{
+    // make sure no properties are mortgaged
+    bool mortgaged = false;
+
+    for (auto property : m_propertyGroups)
+    {
+        if (property.second.compare(group) == 0)
+        {
+            mortgaged |= IsPropertyMortgaged(property.first);
+        }
+    }
+
+    if (mortgaged)
+    {
+        stringstream ss;
+        ss << "Cannot build houses, one or more properties in color group is mortgaged";
+
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
+
+        return;
+    }
+
+    vector<BoardSpace *> properties;
+
+    for (auto & space : board)
+    {
+        if (space->GetType() == BoardSpaceType::property)
+        {
+            int owner = reinterpret_cast<Property *>(space)->GetOwner();
+            bool monopoly = reinterpret_cast<Property *>(space)->DoesOwnerHaveMonopoly();
+            string colorGroup = reinterpret_cast<Property *>(space)->GetGroupName();
+
+            bool correctOwner = (owner == GetPlayerId());
+            bool correctGroup = (colorGroup.compare(group) == 0);
+            
+            if (monopoly && correctGroup && correctOwner)
+            {
+                properties.push_back(space);
+            }
+        }
+    }
+
+    for (int i = 0; i < numHouses; i++)
+    {
+        reinterpret_cast<Property *>(properties[i])->AddHouse();
+    }
+}
+
+void Player::PlayerCheckForMonopolies(vector<BoardSpace *> & board)
+{
+    for ( auto space : board)
+    {
+        if (space->GetType() == BoardSpaceType::property)
+        {
+            int owner = reinterpret_cast<Property *>(space)->GetOwner();
+            bool monopoly = reinterpret_cast<Property *>(space)->DoesOwnerHaveMonopoly();
+            string group = reinterpret_cast<Property *>(space)->GetGroupName();
+
+            if (owner == GetPlayerId() && monopoly)
+            {
+                AddMonopoly(group);
+            }
+        } 
+    }
+}
+
+void Player::AddMonopoly(string group)
+{
+    bool found = false;
+
+    for (auto propGroup : m_monopolies)
+    {
+        found |= (propGroup.compare(group) == 0);
+    }
+
+    if (!found)
+    {
+        m_monopolies.push_back(group);
+    }
+}
+
+void Player::OutputPlayerStats(vector<BoardSpace *> & board)
+{
+    PlayerCheckForMonopolies(board);
+
     cout << GetName() << " Player Stats: " << endl;
-    cout << " bank account: $" << m_bankAccount << endl;
+    cout << "          Cash: $" << m_bankAccount << endl;
+    cout << "     Net Worth: $" << GetNetWorth() << endl;
+    cout << "Rent Potential: $" << GetRentPotential(board) << endl;
 
     if(HasGetOutOfJailFreeCard())
     {
-        cout << " *Get Out Of Jail Free Card*" << endl;
+        cout << " *Get Out Of Jail Free Card* X " << m_getOutOfJailFreeCardCount << endl;
     }
 
     if (m_propertyGroups.size() > 0)
@@ -774,7 +1180,7 @@ void Player::PrintBoardPosition(vector<BoardSpace *> & board)
 
     cout << endl;
     cout << "___________________________________________________________________" << endl
-         << "|Free |Kntky| Chn | Ind | ILL | RR  | Atl | Vent| WW  |MarGr| Jail|" << endl << "|";
+         << "|Free |Kntky|  ?  | Ind | ILL | RR  | Atl | Vent| WW  |MarGr| Jail|" << endl << "|";
 
     for(uint32_t i = 0; i < 11; i++)
     {
@@ -806,7 +1212,7 @@ void Player::PrintBoardPosition(vector<BoardSpace *> & board)
     cout << "                                                     |";
     DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
 
-    cout << endl << "| Vir |                                                     | Chn |" << endl << "|";
+    cout << endl << "| Vir |                                                     |  ?  |" << endl << "|";
     DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
     cout << "                                                     |";
     DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
@@ -826,7 +1232,7 @@ void Player::PrintBoardPosition(vector<BoardSpace *> & board)
     cout << "_____________________________________________________|";
     DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
 
-    cout << endl << "|Jail |Conn |Verm | Chn |Orien| RR  | InTx|Balt | CC  | Med | GO  |" << endl << "|";
+    cout << endl << "|Jail |Conn |Verm |  ?  |Orien| RR  | InTx|Balt | CC  | Med | GO  |" << endl << "|";
 
     for(uint32_t i = 0; i < 11; i++)
     {

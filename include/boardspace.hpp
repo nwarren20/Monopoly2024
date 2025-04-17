@@ -65,9 +65,13 @@ class Property : public BoardSpace
 
     bool HandlePlayerVisit(Player * player);
 
-    void BuyHouses();
+    void AddHouse();
 
-    bool DoesOwnerHaveMonopoly(const int playerId);
+    int GetHouseCount() {
+      return m_houseCount;
+    }
+
+    bool DoesOwnerHaveMonopoly();
 
     void SetGroup(vector<Property *> & group) {
       m_group = group;
@@ -77,7 +81,18 @@ class Property : public BoardSpace
       return m_groupName;
     }
 
+    int GetRent();
+
     int GetOwner() {
+
+      if (m_owner != -1)
+      {
+          if (GetBanker()->IsPlayerActive(m_owner) == false)
+          {
+              m_owner = -1;
+          }
+      }
+
       return m_owner;
     }
 
@@ -121,7 +136,18 @@ class RailRoad : public BoardSpace
       m_group = group;
     }
 
+    int GetTicketPrice();
+
     int GetOwner() {
+
+      if (m_owner != -1)
+      {
+          if (GetBanker()->IsPlayerActive(m_owner) == false)
+          {
+              m_owner = -1;
+          }
+      }
+
       return m_owner;
     }
 
@@ -153,6 +179,15 @@ class Utility : public BoardSpace
     bool DoesPlayerOwnBothUtilities(const int playerId);
 
     int GetOwner() {
+
+      if (m_owner != -1)
+      {
+          if (GetBanker()->IsPlayerActive(m_owner) == false)
+          {
+              m_owner = -1;
+          }
+      }
+
       return m_owner;
     }
 
@@ -185,9 +220,19 @@ class TakeCard : public BoardSpace
 
     bool HandlePlayerVisit(Player * player);
 
-    bool PerformCard(Player * player, Card card);
+    bool PerformCardAction(Player * player, Card card);
 
   private:
+
+    void PerformTransaction(Player * player, Card card);
+
+    bool PerformMoveTo(Player * player, Card card);
+
+    bool PerformMoveRelative(Player * player, Card card);
+
+    void PerfromFree(Player * player, Card card);
+
+    void PerformImprovements(Player * player, Card card);
 
     CardDeck * m_cardStack;
 };

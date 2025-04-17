@@ -15,8 +15,6 @@ using namespace std;
 
 int main()
 {
-    cout << "Welcome to MONOPOLY!\n";
-
     Banker * banker = new Banker();
 
     vector<BoardSpace *> gameBoard;
@@ -29,6 +27,8 @@ int main()
     {
         gameBoard[i]->SetBanker(banker);
     }
+
+    MonopolyUtils::PringWelcomeMessage();
 
     banker->WhoesPlaying();
 
@@ -54,7 +54,7 @@ int main()
 
             cout << "===================================================================\n";
             cout << playerThisTurn->GetName() << " is currently on " << space << endl;
-            playerThisTurn->OutputPlayerStats();
+            playerThisTurn->OutputPlayerStats(gameBoard);
 
             banker->GivePlayOptions(playerThisTurn);
 
@@ -131,11 +131,22 @@ int main()
                     MonopolyUtils::OutputMessage("must own property to mortgage", 0);
                 }
             }
+            else if (input.compare("u") == 0)
+            {
+                if (playerThisTurn->HasMortgagedProperty())
+                {
+                    playerThisTurn->UnMortgageMenu();
+                }
+                else
+                {
+                    MonopolyUtils::OutputMessage("no property you own is mortgaged", 0);
+                }
+            }
             else if (input.compare("b") == 0)
             {
                 if (playerThisTurn->OwnsMonopoly())
                 {
-                    MonopolyUtils::OutputMessage("Not implemented yet", 0);
+                    playerThisTurn->BuyHousesAndHotels(gameBoard);
                 }
                 else
                 {
@@ -167,7 +178,7 @@ int main()
             }
         }
 
-        playerThisTurn->OutputPlayerStats();
+        playerThisTurn->OutputPlayerStats(gameBoard);
         
         bool validInput = false;
 

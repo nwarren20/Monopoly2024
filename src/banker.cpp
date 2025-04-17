@@ -168,6 +168,8 @@ void Banker::PayEachPlayer(Player * player, int amount)
             int paid = player->PayGeneric(amount);
             opponent->CollectGeneric(amount);
 
+            CheckPlayerForBankrupcy(player->GetPlayerId(), paid, amount);
+
             std::stringstream ss;
             ss << player->GetName() << " paid " << opponent->GetName() << " $" << paid;
 
@@ -189,6 +191,8 @@ void Banker::CollectEachPlayer(Player * player, int amount)
             player->CollectGeneric(amount);
             int paid = opponent->PayGeneric(amount);
 
+            CheckPlayerForBankrupcy(opponent->GetPlayerId(), paid, amount);
+
             std::stringstream ss;
             ss << opponent->GetName() << " paid " << player->GetName() << " $" << paid;
 
@@ -206,9 +210,19 @@ void Banker::PayPerHouseAndHotel(Player * player, int perHotelCost, int perHouse
     int hotelTotalCost = hotelCount * perHotelCost;
     int houseTotalCost = houseCount * perHouseCost;
     
-    int totalCost = hotelTotalCost + houseTotalCost;
+    int totalBill = hotelTotalCost + houseTotalCost;
 
-    int paid = player->PayGeneric(totalCost);
+    int paid = player->PayGeneric(totalBill);
+
+    if (paid < totalBill)
+    {
+        stringstream ss;
+        ss << "You are BANKRUPT and are no longer in the game.";
+
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
+
+        RemovePlayerFromGame(player->GetPlayerId());
+    }
 
     std::stringstream ss;
     ss << player->GetName() << " paid a total of $" << paid << " for all houses and hotels";
@@ -274,6 +288,9 @@ void Banker::UtilityTransaction(const int customerId, const int ownerId, const i
     else
     {
         int paid = customer->PayRent(bill);
+
+        CheckPlayerForBankrupcy(customerId, paid, bill);
+
         owner->CollectRent(paid);
 
         ss = stringstream("");
@@ -284,39 +301,31 @@ void Banker::UtilityTransaction(const int customerId, const int ownerId, const i
     
 }
 
-void Banker::RailRoadTransaction(const int passangerId, const int ownerId, const int railRoadsOwned, const bool chance, bool mortgaged)
+void Banker::RailRoadTransaction(const int passangerId, const int ownerId, int ticketPrice, const int railRoadsOwned, const bool chance, bool mortgaged)
 {
     Player * customer = m_allPlayers[passangerId];
     Player * owner = m_allPlayers[ownerId];
 
-    int ticketPrice = 25;
-
     if (railRoadsOwned == 2)
     {
-      ticketPrice = 50;
-    
-      stringstream ss;
-      ss << "Luggage fees are a pain, " << owner->GetName() << " is getting a little greedy with two lines.";
+        stringstream ss;
+        ss << "Luggage fees are a pain, " << owner->GetName() << " is getting a little greedy with two lines.";
 
-      MonopolyUtils::OutputMessage(ss.str(), 1000);
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
     }
     else if (railRoadsOwned == 3)
     {
-      ticketPrice = 100;
+        stringstream ss;
+        ss << "Bathroom fees, this is getting rediculous, someone needs to put a stop to " << owner->GetName();
 
-      stringstream ss;
-      ss << "Bathroom fees, this is getting rediculous, someone needs to put a stop to " << owner->GetName();
-
-      MonopolyUtils::OutputMessage(ss.str(), 1000);
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
     }
     else if (railRoadsOwned == 4)
     {
-      ticketPrice = 200;
+        stringstream ss;
+        ss << owner->GetName() << " is a real tycoon, we are paying out the nose now.";
 
-      stringstream ss;
-      ss << owner->GetName() << " is a real tycoon, we are paying out the nose now.";
-
-      MonopolyUtils::OutputMessage(ss.str(), 1000);
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
     }
     else
     {
@@ -350,6 +359,9 @@ void Banker::RailRoadTransaction(const int passangerId, const int ownerId, const
         MonopolyUtils::OutputMessage(ss.str(), 1000);
 
         int paid = customer->PayRent(ticketPrice);
+
+        CheckPlayerForBankrupcy(passangerId, paid, ticketPrice);
+
         owner->CollectRent(paid);
 
         ss = stringstream("");
@@ -372,10 +384,8 @@ void Banker::RentTransaction(const int renterId, const int ownerId, const int am
 
     if (monopoly)
     {
-        rent *= 2;
-        
         ss = stringstream("");
-        ss << owner->GetName() << " has a monopoly on " << group << " so rent is doubled from $" << amount << " to $" << rent;
+        ss << owner->GetName() << " has a monopoly on " << group << " so rent is doubled from $" << (rent / 2) << " to $" << rent;
         MonopolyUtils::OutputMessage(ss.str(), 1000);
     }
 
@@ -394,12 +404,57 @@ void Banker::RentTransaction(const int renterId, const int ownerId, const int am
         MonopolyUtils::OutputMessage(ss.str(), 1000);
 
         int paid = renter->PayRent(rent);
+
+        CheckPlayerForBankrupcy(renterId, paid, rent);
+
         owner->CollectRent(paid);
 
         ss = stringstream("");
         ss << owner->GetName() << " collected $" << paid;
 
         MonopolyUtils::OutputMessage(ss.str(), 1000);
+    }
+}
+
+void Banker::TaxTransaction(const int playerId, const int amount)
+{
+    Player * player = m_allPlayers[playerId];
+
+    int fee = amount;
+
+    int paid = player->PayTax(fee);
+
+    CheckPlayerForBankrupcy(playerId, paid, fee);
+}
+
+void Banker::CardTransaction(const int playerId, const int amount)
+{
+    Player * player = m_allPlayers[playerId];
+
+    if (amount > 0)
+    {
+        player->CollectGeneric(amount);
+    }
+    else if (amount < 0)
+    {
+        int fee = amount * -1;
+
+        int paid = player->PayGeneric(fee);
+
+        CheckPlayerForBankrupcy(playerId, paid, amount);
+    }
+}
+
+void Banker::CheckPlayerForBankrupcy(const int playerId, int paid, int owed)
+{
+    if (paid < owed)
+    {
+        stringstream ss = stringstream("");
+        ss << "You are BANKRUPT and are no longer in the game.";
+
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
+
+        RemovePlayerFromGame(playerId);
     }
 }
 
@@ -415,29 +470,6 @@ bool Banker::BuyPropertyTransaction(Player * player, const int price, const stri
     bool success = player->BuyProperty(price, property, group);
 
     return success;
-}
-
-bool Banker::DoesPlayerOwnMonopoly(Player * player, string group)
-{
-    bool monopoly = true;
-
-    int playerId = player->GetPlayerId();
-
-    //for (uint i = 0; i < m_gameBoard.size(); i++)
-    {
-        //if (m_gameBoard[i]->GetType() == BoardSpaceType::property)
-        {
-            //Property * prop = reinterpret_cast<Property *>(m_gameBoard[i]);
-
-            //if (prop->GetGroup().compare(group) == 0)
-            {
-                //bool doesOwn = (prop->GetOwner() == playerId);
-                //monopoly &= doesOwn;
-            }
-        }
-    }
-
-    return monopoly;
 }
 
 void Banker::RemovePlayerFromGame(const int playerId)
@@ -536,11 +568,16 @@ void Banker::GivePlayOptions(Player * player)
 
     if (player->OwnsProperty())
     {
-        cout << "==> Enter m to mortgage." << endl;
+        cout << "==> Enter m to Mortgage property." << endl;
 
         if (player->OwnsMonopoly())
         {
-            cout << "==> Enter b to buy houses/hotels" << endl;
+            cout << "==> Enter b to buy houses/hotels." << endl;
+        }
+
+        if (player->HasMortgagedProperty())
+        {
+            cout << "==> Enter u to Unmortgage property." << endl;
         }
      }
 }

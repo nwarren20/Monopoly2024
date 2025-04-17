@@ -55,7 +55,7 @@ class Player
 
     bool BuyUtility(string name);
 
-    bool PayTax(const int fee);
+    int PayTax(const int fee);
 
     int PayRent(const int amount);
 
@@ -71,7 +71,7 @@ class Player
 
     void CollectGeneric(const int amount);
 
-    void OutputPlayerStats();
+    void OutputPlayerStats(vector<BoardSpace *> & board);
 
     void PrintPropertyGroup(string group);
 
@@ -94,6 +94,26 @@ class Player
     void MortgageProperty(const string propertyName, int value);
 
     bool IsPropertyMortgaged(const string propertyName);
+
+    bool HasMortgagedProperty();
+
+    void MortgageToBuyProperty(const int price);
+
+    void UnMortgageMenu();
+
+    void UnMortgageProperty(const string propertyName, int value);
+
+    int GetNetWorth();
+
+    int GetRentPotential(vector<BoardSpace *> & board);
+
+    void PlayerCheckForMonopolies(vector<BoardSpace *> & board);
+
+    void AddMonopoly(string group);
+
+    void BuyHousesAndHotels(vector<BoardSpace *> & board);
+
+    void AddHousesToGroup(vector<BoardSpace *> & board, string group, int numHouses);
 
     int GetPosition() {
         return m_position;
@@ -120,7 +140,7 @@ class Player
     }
 
     bool OwnsMonopoly() {
-        return false;
+        return !m_monopolies.empty();
     }
 
     bool IsJailed() {
@@ -147,4 +167,5 @@ class Player
     bool m_payUtilityTenTimes;
     vector<pair<string, string> > m_propertyGroups;
     vector<pair<string, int> > m_propertyPrice;
+    vector<string> m_monopolies;
 };
