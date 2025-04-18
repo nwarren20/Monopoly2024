@@ -13,7 +13,7 @@ class Banker
     Banker();
     ~Banker();
 
-    void RentTransaction(const int renterId, const int ownerId, const int amount, string group, bool monopoly, bool mortgaged);
+    void RentTransaction(const int renterId, const int ownerId, const int amount, string name, string group, int houseCount, bool monopoly, bool mortgaged);
 
     void RailRoadTransaction(const int passangerId, const int ownerId, int ticketPrice, const int railRoadsOwned, const bool chance, bool mortgaged);
 

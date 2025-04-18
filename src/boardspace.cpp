@@ -74,7 +74,7 @@ bool Property::HandlePlayerVisit(Player * player)
 
         bool mortgaged = GetBanker()->IsPropertyMortgaged(GetName(), GetOwner());
 
-        GetBanker()->RentTransaction(player->GetPlayerId(), GetOwner(), GetRent(), GetGroupName(), monopoly, mortgaged);
+        GetBanker()->RentTransaction(player->GetPlayerId(), GetOwner(), GetRent(), GetName(), GetGroupName(), GetHouseCount(), monopoly, mortgaged);
     }
 
     return false;
@@ -86,7 +86,16 @@ int Property::GetRent()
 
     if (DoesOwnerHaveMonopoly())
     {
-        rent *= 2;
+        const int houseCount = GetHouseCount();
+
+        if (houseCount > 0 && houseCount <= 5)
+        {
+            rent = m_houseRents[houseCount];
+        }
+        else
+        {
+            rent *= 2;
+        }
     }
 
     return rent;
@@ -94,13 +103,13 @@ int Property::GetRent()
 
 bool Property::DoesOwnerHaveMonopoly()
 {
-  bool monopoly = true;
+    bool monopoly = true;
 
-  for (int i = 0; i < m_group.size(); i++)
-  {
-    bool doesOwn = (m_group[i]->GetOwner() == GetOwner());
-    monopoly &= doesOwn;
-  }
+    for (int i = 0; i < m_group.size(); i++)
+    {
+        bool doesOwn = (m_group[i]->GetOwner() == GetOwner());
+        monopoly &= doesOwn;
+    }
 
   return monopoly;
 }

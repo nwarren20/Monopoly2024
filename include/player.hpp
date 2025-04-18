@@ -115,6 +115,12 @@ class Player
 
     void AddHousesToGroup(vector<BoardSpace *> & board, string group, int numHouses);
 
+    int GetHouseCountForGroup(vector<BoardSpace *> & board, const string colorGroup);
+
+    bool BuyHouses(const int count, const int price);
+
+    bool DoesColorGroupHaveAMortgage(string colorGroup);
+
     int GetPosition() {
         return m_position;
     }

@@ -8,6 +8,39 @@
 using namespace std;
 //using namespace MonopolyUtils;
 
+namespace Houses
+{
+
+    int GetHousePriceForGroup(string group)
+    {
+        for (auto pair : ColorGroupPerHousePrice)
+        {
+            if (pair.first.compare(group) == 0)
+            {
+                return pair.second;
+            }
+        }
+
+        return 0;
+    }
+
+    int GetMaxHousesForGroup(string group)
+    {
+        for (auto pair : ColorGroupMaxHouseCount)
+        {
+            if (pair.first.compare(group) == 0)
+            {
+                return pair.second;
+            }
+        }
+
+        return 0;
+    }
+
+}
+
+
+
     void MonopolyUtils::OutputMessage(string message, int delay)
     {
         cout << "===================================================================\n\n";
@@ -229,20 +262,20 @@ using namespace std;
     void MonopolyUtils::PringWelcomeMessage()
     {
         cout << 
-        "______________________________________________________________________________________________" << endl <<
-        "|                                                                                             " << endl <<
-        "|       M             M             OOOOOO        N           NNN        OOOOOO          " << endl <<
-        "|      MMM           MMM         OOOOOOOOOOOO     NNN         NNN     OOOOOOOOOOOO       " << endl <<
-        "|     MMMMM         MMMMM      OOOO        OOOO   NNNNN       NNN   OOOO        OOOO     " << endl <<
-        "|     MMMMMM       MMMMMM     OOO            OOO  NNN NNN     NNN  OOO            OOO    " << endl <<
-        "|    MMM  MMM     MMM  MMM   OOO              OOO NNN   NNN   NNN OOO              OOO   " << endl <<
-        "|    MMM   MMM   MMM   MMM   OOO              OOO NNN     NNN NNN OOO              OOO   " << endl <<
-        "|   MMM     MMM MMM     MMM   OOO            OOO  NNN       NNNNN  OOO            OOO    " << endl <<
-        "|   MMM      MMMMM      MMM    OOOO        OOOO   NNN         NNN   OOOO        OOOO     " << endl <<
-        "|  MMM        MMM        MMM     OOOOOOOOOOOO     NNN          NN     OOOOOOOOOOOO       " << endl <<
-        "|  MMM         M         MMM        OOOOOO        NNN           N        OOOOOO          " << endl <<
-        "|                                                                                              " << endl <<
-        "|______________________________________________________________________________________________" << endl << endl;
+        "____________________________________________________________________________________________________________________________________________________" << endl <<
+        "|                                                                                                                                                  |" << endl <<
+        "|       M             M             OOOOOO        N           NNN        OOOOOO        PPPPPPPPPP           OOOOOO        LLL        YYY       YYY |" << endl <<
+        "|      MMM           MMM         OOOOOOOOOOOO     NNN         NNN     OOOOOOOOOOOO     PPPPPPPPPPPP      OOOOOOOOOOOO     LLL         YYY     YYY  |" << endl <<
+        "|     MMMMM         MMMMM      OOOO        OOOO   NNNNN       NNN   OOOO        OOOO   PPP      PPPP   OOOO        OOOO   LLL          YYY   YYY   |" << endl <<
+        "|     MMMMMM       MMMMMM     OOO            OOO  NNN NNN     NNN  OOO            OOO  PPP      PPPP  OOO            OOO  LLL           YYY YYY    |" << endl <<
+        "|    MMM  MMM     MMM  MMM   OOO              OOO NNN   NNN   NNN OOO              OOO PPPPPPPPPPPP  OOO              OOO LLL            YYYYY     |" << endl <<
+        "|    MMM   MMM   MMM   MMM   OOO              OOO NNN     NNN NNN OOO              OOO PPPPPPPPPP    OOO              OOO LLL             YYY      |" << endl <<
+        "|   MMM     MMM MMM     MMM   OOO            OOO  NNN       NNNNN  OOO            OOO  PPP            OOO            OOO  LLL            YYY       |" << endl <<
+        "|   MMM      MMMMM      MMM    OOOO        OOOO   NNN         NNN   OOOO        OOOO   PPP             OOOO        OOOO   LLL           YYY        |" << endl <<
+        "|  MMM        MMM        MMM     OOOOOOOOOOOO     NNN          NN     OOOOOOOOOOOO     PPP               OOOOOOOOOOOO     LLLLLLLLLLL  YYY         |" << endl <<
+        "|  MMM         M         MMM        OOOOOO        NNN           N        OOOOOO        PPP                  OOOOOO        LLLLLLLLLLL YYY          |" << endl <<
+        "|                                                                                                                                                  |" << endl <<
+        "|__________________________________________________________________________________________________________________________________________________|" << endl << endl;
 
 
     }

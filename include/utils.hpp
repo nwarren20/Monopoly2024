@@ -9,6 +9,38 @@ class RailRoad;
 class BoardSpace;
 class CardDeck;
 
+namespace Houses
+{
+    static const vector< pair<string, int> > ColorGroupPerHousePrice = {
+      { "DarkPurple", 50 },
+      { "LightBlue" , 50 },
+      { "Purple", 100 },
+      { "Orange", 100 },
+      { "Red", 150 },
+      { "Yellow", 150 },
+      { "Green", 200 },
+      { "Blue", 200 }
+    };
+
+  static const vector< pair<string, int> > ColorGroupMaxHouseCount = {
+      { "DarkPurple", 10 },
+      { "LightBlue" , 15 },
+      { "Purple", 15 },
+      { "Orange", 15 },
+      { "Red", 15 },
+      { "Yellow", 15 },
+      { "Green", 15 },
+      { "Blue", 10 }
+    };
+
+   int GetMaxHousesForGroup(string group);
+
+   int GetHousePriceForGroup(string group);
+} // namespace Houses
+
+
+
+
 class MonopolyUtils
 {
   public:

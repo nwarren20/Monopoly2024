@@ -370,7 +370,7 @@ void Banker::RailRoadTransaction(const int passangerId, const int ownerId, int t
     }
 }
 
-void Banker::RentTransaction(const int renterId, const int ownerId, const int amount, string group, bool monopoly, bool mortgaged)
+void Banker::RentTransaction(const int renterId, const int ownerId, const int amount, string name, string group, int houseCount, bool monopoly, bool mortgaged)
 {
     Player * renter = m_allPlayers[renterId];
     Player * owner = m_allPlayers[ownerId];
@@ -378,21 +378,46 @@ void Banker::RentTransaction(const int renterId, const int ownerId, const int am
     int rent = amount;
 
     stringstream ss;
-    ss << "Property is owned by " << owner->GetName();
+    ss << name << " is owned by " << owner->GetName();
 
     MonopolyUtils::OutputMessage(ss.str(), 1000);
 
     if (monopoly)
     {
-        ss = stringstream("");
-        ss << owner->GetName() << " has a monopoly on " << group << " so rent is doubled from $" << (rent / 2) << " to $" << rent;
-        MonopolyUtils::OutputMessage(ss.str(), 1000);
+        if (houseCount > 0)
+        {
+            stringstream ssHouseTerm = stringstream("");
+            
+            if (houseCount > 1)
+            {
+                ssHouseTerm << houseCount << " houses";
+            }
+            else if (houseCount == 5)
+            {
+                ssHouseTerm << "a hotel";
+            }
+            else
+            {
+                ssHouseTerm << ("a house");
+            }
+
+            ss = stringstream("");
+            ss << name << " with " << ssHouseTerm.str() << " has a rent of $" << rent;
+
+            MonopolyUtils::OutputMessage(ss.str(), 1000);
+        }
+        else
+        {
+            ss = stringstream("");
+            ss << owner->GetName() << " has a monopoly on " << group << " so rent is doubled from $" << (rent / 2) << " to $" << rent;
+            MonopolyUtils::OutputMessage(ss.str(), 1000);
+        }
     }
 
     if (mortgaged)
     {
         ss = stringstream("");
-        ss << "Property is currently mortgaged so rent can not be collected.\nYou would have owed $" << rent;
+        ss << name << " is currently mortgaged so rent can not be collected.\nYou would have owed $" << rent;
 
         MonopolyUtils::OutputMessage(ss.str(), 1000);
     }
