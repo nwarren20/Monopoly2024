@@ -388,7 +388,7 @@ void Banker::RentTransaction(const int renterId, const int ownerId, const int am
         {
             stringstream ssHouseTerm = stringstream("");
             
-            if (houseCount > 1)
+            if (houseCount > 1 && houseCount < 5)
             {
                 ssHouseTerm << houseCount << " houses";
             }

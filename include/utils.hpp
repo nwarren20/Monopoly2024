@@ -6,6 +6,7 @@ using namespace std;
 
 class Property;
 class RailRoad;
+class Utility;
 class BoardSpace;
 class CardDeck;
 
@@ -63,6 +64,8 @@ class MonopolyUtils
     static void CreateBlueGroup(vector<Property *> & group);
 
     static void CreateRailRoadGroup(vector<RailRoad *> & group);
+
+    static void CreateUtilityGroup(vector<Utility *> & group);
 
     static void LoadBoard(vector<BoardSpace *> & gameBoard, CardDeck * cardDeck);
 

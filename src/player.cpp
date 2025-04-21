@@ -471,7 +471,7 @@ int Player::PayRent(const int amount)
             }
             else
             {
-                int owe = amount - m_bankAccount;
+                int owe = amount;
 
                 paid = Liquidate(owe);
 
@@ -500,7 +500,7 @@ int Player::PayGeneric(const int amount)
     }
     else
     {
-        int owe = amount - m_bankAccount;
+        int owe = amount;
 
         paid = Liquidate(owe);
 
@@ -514,7 +514,7 @@ int Player::PayGeneric(const int amount)
 
 int Player::Liquidate(const int target)
 {
-    cout << "you do not have enought cash to pay, you must liquidate assets for $" << target << endl;
+    cout << "you do not have enought cash to pay, you must liquidate assets for $" << (target - m_bankAccount) << endl;
 
     while (m_bankAccount < target)
     {
@@ -560,7 +560,7 @@ void Player::MortgageMenu()
 
     for (auto property : m_propertyPrice)
     {
-        if (IsPropertyMortgaged(property.first) == false)
+        if (IsPropertyMortgaged(property.first) == false && DoesProperyInListHaveHouse(property.first) == false)
         {
             int mortgageValue = property.second / 2;
             eligibleForMortgage.push_back( make_pair(property.first, mortgageValue) );
@@ -580,7 +580,7 @@ void Player::MortgageMenu()
 
     if (eligibleForMortgage.size() == 0)
     {
-        cout << "  All properties are currently mortgaged" << endl;
+        cout << "No properties are eligible for mortgage" << endl;
     }
 
     cout << "  " << index << ". to exit" << endl;
@@ -1005,16 +1005,39 @@ bool Player::DoesColorGroupHaveAMortgage(string colorGroup)
 
 bool Player::BuyHouses(const int count, const int price)
 {
-    if (m_bankAccount > price)
+    int totalCost = price * count;
+
+    if (m_bankAccount > totalCost)
     {
-        m_bankAccount -= price;
+        stringstream ss;
+        ss << "You want to buy " << count << " houses for a total of $" << totalCost << " (y/n)";
+
+        MonopolyUtils::OutputMessage(ss.str(), 0);
+
+        string input = "";
+        cin >> input;
+
+        while(input.compare("y") != 0 && input.compare("n") != 0)
+        {
+            cout << "invalid entry\n";
+            cin >> input;
+        }
+
+        if (input.compare("y") == 0)
+        {
+            m_bankAccount -= totalCost;
+        }
+        else
+        {
+            return false;
+        }
 
         return true;
     }
     else
     {
         stringstream ss;
-        ss << "Not Enough Cash to buy houses for $" << price;
+        ss << "Not Enough Cash to buy houses for $" << totalCost;
         MonopolyUtils::OutputMessage(ss.str(), 1000);
 
         return false;
@@ -1056,6 +1079,11 @@ void Player::AddHousesToGroup(vector<BoardSpace *> & board, string group, int ho
         else
         {
             reinterpret_cast<Property *>(properties[propertyIndex])->AddHouse();
+
+            string name = properties[propertyIndex]->GetName();
+            int houseCount = reinterpret_cast<Property *>(properties[propertyIndex])->GetHouseCount();
+
+            UpdateNameInPropertyLists(name, houseCount);
         }
 
         propertyIndex = (propertyIndex + 1) % properties.size();
@@ -1065,6 +1093,105 @@ void Player::AddHousesToGroup(vector<BoardSpace *> & board, string group, int ho
     ss << "You built " << housesToBuy << " on the " << group << " properties!";
 
     MonopolyUtils::OutputMessage(ss.str(), 1000);
+}
+
+string AddedHouseCountText(string name, int houseCount)
+{
+    stringstream ss = stringstream("");
+
+    if (houseCount == 1)
+    {
+        ss << "(1 house)";
+    }
+    else if(houseCount > 1 && houseCount < 5)
+    {
+        ss << "(" << houseCount << " houses)";
+    }
+    else if (houseCount == 5)
+    {
+        ss << "(Hotel)";
+    }
+            
+    return string(ss.str() + name);
+}
+
+void Player::UpdateNameInPropertyLists(string targetName, int houseCount)
+{
+    for (auto & property : m_propertyPrice)
+    {
+        string propertyName = property.first;
+
+        property.first = UpdatePropertyName(propertyName, targetName, houseCount);
+    }
+
+    for (auto & property : m_propertyGroups)
+    {
+        string propertyName = property.first;
+
+        property.first = UpdatePropertyName(propertyName, targetName, houseCount);
+    }
+}
+
+string Player::UpdatePropertyName(string name, string target, int houseCount)
+{
+    string updatedName = name;
+
+    if (name.compare(target) == 0)
+    {
+        updatedName = AddedHouseCountText(name, houseCount);
+    }
+     else
+    {
+        size_t found = name.find(target);
+
+        if (found != string::npos)
+        {
+            size_t endPar = name.find(")");
+
+            if (endPar != string::npos)
+            {
+                size_t start = endPar + 1;
+
+                string nameNoParanth = name.substr(start);
+
+                updatedName = AddedHouseCountText(nameNoParanth, houseCount);
+            }
+        }
+    }
+
+    return updatedName;
+}
+
+bool Player::DoesProperyInListHaveHouse(string propertyName)
+{
+    for (auto propGroup : m_propertyGroups)
+    {
+        size_t endPos = propertyName.find(propertyName);
+
+        if (endPos != string::npos)
+        {
+            size_t endPar = propertyName.find(")");
+
+            if (endPar != string::npos)
+            {
+                size_t length = endPar + 1;
+
+                string paranth = propertyName.substr(0, length);
+
+                if (paranth.compare("(1 house)") == 0 ||
+                    paranth.compare("(2 houses)") == 0 ||
+                    paranth.compare("(3 houses)") == 0 ||
+                    paranth.compare("(4 houses)") == 0 ||
+                    paranth.compare("(Hotel)") == 0)
+
+                {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
 }
 
 void Player::PlayerCheckForMonopolies(vector<BoardSpace *> & board)
@@ -1271,6 +1398,28 @@ void DrawBoardPosition(vector<BoardSpace *> & board, int & index, const int curr
     ++index;
 }
 
+string DrawHouse(BoardSpace * space, string defaultString)
+{
+    stringstream ss = stringstream(defaultString);
+
+    if (space->GetType() == BoardSpaceType::property)
+    {
+        int houseCount = reinterpret_cast<Property *>(space)->GetHouseCount();
+
+        if (houseCount < 0 && houseCount < 5)
+        {
+            ss = stringstream("");
+            ss << houseCount;
+        }
+        else if (houseCount == 5)
+        {
+            ss = stringstream("H");
+        }
+    }
+
+    return ss.str();
+}
+
 void Player::PrintBoardPosition(vector<BoardSpace *> & board)
 {
     
@@ -1278,19 +1427,20 @@ void Player::PrintBoardPosition(vector<BoardSpace *> & board)
 
     cout << endl;
     cout << "___________________________________________________________________" << endl
-         << "|Free |Kntky|  ?  | Ind | ILL | RR  | Atl | Vent| WW  |MarGr| Jail|" << endl << "|";
+         << "|Free |Kntk" << DrawHouse(board[21], "y") << "|  ?  | Ind" << DrawHouse(board[23], " ") << "| ILL" << DrawHouse(board[24], " ") 
+         << "| RR  | Atl" << DrawHouse(board[26], " ") << "| Ven" << DrawHouse(board[27], "t") << "| WW  |MarG" << DrawHouse(board[29], "r") << "| Jail|" << endl << "|";
 
     for(uint32_t i = 0; i < 11; i++)
     {
         DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
     }
 
-    cout << endl << "| NY  |                                                     | Pacf|" << endl << "|";
+    cout << endl << "| NY " << DrawHouse(board[19], " ") << "|                                                     | Pac" << DrawHouse(board[31], "f") << "|" << endl << "|";
     DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
     cout << "                                                     |";
     DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
 
-    cout << endl << "|Tenn |                                                     |  NC |" << endl << "|";
+    cout << endl << "|Tenn" << DrawHouse(board[18], " ") << "|                                                     |  NC" << DrawHouse(board[32], " ") << "|" << endl << "|";
     DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
     cout << "                                                     |";
     DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
@@ -1300,7 +1450,7 @@ void Player::PrintBoardPosition(vector<BoardSpace *> & board)
     cout << "                                                     |";
     DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
 
-    cout << endl << "|StJam|                                                     | Penn|" << endl << "|";
+    cout << endl << "|StJa" << DrawHouse(board[16], "m") << "|                                                     | Pen" << DrawHouse(board[34], "n") << "|" << endl << "|";
     DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
     cout << "                                                     |";
     DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
@@ -1310,12 +1460,12 @@ void Player::PrintBoardPosition(vector<BoardSpace *> & board)
     cout << "                                                     |";
     DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
 
-    cout << endl << "| Vir |                                                     |  ?  |" << endl << "|";
+    cout << endl << "| Vir" << DrawHouse(board[14], " ") << "|                                                     |  ?  |" << endl << "|";
     DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
     cout << "                                                     |";
     DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
 
-    cout << endl << "|State|                                                     |ParkP|" << endl << "|";
+    cout << endl << "|Stat" << DrawHouse(board[13], "e") << "|                                                     |Park" << DrawHouse(board[37], "P") << "|" << endl << "|";
     DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
     cout << "                                                     |";
     DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
@@ -1325,12 +1475,12 @@ void Player::PrintBoardPosition(vector<BoardSpace *> & board)
     cout << "                                                     |";
     DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
 
-    cout << endl << "|StCh |                                                     |Board|" << endl << "|";
+    cout << endl << "|StCh" << DrawHouse(board[11], " ") << "|                                                     |Boar" << DrawHouse(board[39], "d") << "|" << endl << "|";
     DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
     cout << "_____________________________________________________|";
     DrawBoardPosition(board, drawIndex, GetPosition(), GetToken());
 
-    cout << endl << "|Jail |Conn |Verm |  ?  |Orien| RR  | InTx|Balt | CC  | Med | GO  |" << endl << "|";
+    cout << endl << "|Jail |Conn" << DrawHouse(board[9], " ") << "|Verm" << DrawHouse(board[8], " ") << "|  ?  |Orie" << DrawHouse(board[6], "n") << "| RR  | InTx|Balt" << DrawHouse(board[3], " ") << "| CC  | Med" << DrawHouse(board[1], " ") << "| GO  |" << endl << "|";
 
     for(uint32_t i = 0; i < 11; i++)
     {

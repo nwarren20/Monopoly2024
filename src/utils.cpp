@@ -181,6 +181,18 @@ namespace Houses
         BandO_RR->SetGroup(group);
         ShortLine_RR->SetGroup(group);
     }
+
+    void MonopolyUtils::CreateUtilityGroup(vector<Utility *> & group)
+    {
+        Utility * electric = new Utility("Electric Company", 12);
+        Utility * water = new Utility("Water Works", 28);
+        
+        group.push_back( electric );
+        group.push_back( water );
+
+        electric->SetGroup(group);
+        water->SetGroup(group);
+    }
     
     void MonopolyUtils::LoadBoard(vector<BoardSpace *> & gameBoard, CardDeck * cardDeck)
     {
@@ -211,8 +223,8 @@ namespace Houses
         vector<RailRoad *> railRoadGroup;
         CreateRailRoadGroup(railRoadGroup);
 
-        //vector<int> communityChestCards;
-        //vector<int> chanceCards;
+        std::vector<Utility *> utilityGroup;
+        CreateUtilityGroup(utilityGroup);
         
         gameBoard.push_back( new FreeSpace("Go", 0, 200) );
         gameBoard.push_back( darkPurpleGroup[0] );
@@ -227,7 +239,7 @@ namespace Houses
     
         gameBoard.push_back( new Jail("Jail/JustVisiting", 10) );
         gameBoard.push_back( purpleGroup[0] );
-        gameBoard.push_back( new Utility("Electric Company", 12) );
+        gameBoard.push_back( utilityGroup[0] );
         gameBoard.push_back( purpleGroup[1] );
         gameBoard.push_back( purpleGroup[2] );
         gameBoard.push_back( railRoadGroup[1] );
@@ -244,7 +256,7 @@ namespace Houses
         gameBoard.push_back( railRoadGroup[2] );
         gameBoard.push_back( yellowGroup[0] );
         gameBoard.push_back( yellowGroup[1] );
-        gameBoard.push_back( new Utility("Water Works", 28) );
+        gameBoard.push_back( utilityGroup[1] );
         gameBoard.push_back( yellowGroup[2] );
     
         gameBoard.push_back( new Jail("Go to Jail", 30) );

@@ -121,6 +121,12 @@ class Player
 
     bool DoesColorGroupHaveAMortgage(string colorGroup);
 
+    void UpdateNameInPropertyLists(string targetName, int houseCount);
+
+    string UpdatePropertyName(string name, string target, int houseCount);
+
+    bool DoesProperyInListHaveHouse(string propertyName);
+
     int GetPosition() {
         return m_position;
     }
