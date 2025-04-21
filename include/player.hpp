@@ -7,6 +7,20 @@ using namespace std;
 
 class BoardSpace;
 
+struct PlayerStats
+{
+    int rentCollected = 0;
+    int rentPaid = 0;
+    int taxesPaid = 0;
+    int cardCollected = 0;
+    int cardPaid = 0;
+    int diceRolledCount = 0;
+    int spacesMoved = 0;
+    int totalDoublesRolled = 0;
+    int passedGoCount = 0;
+    int timesJailded = 0;
+};
+
 class Player
 {
   public:
@@ -180,4 +194,5 @@ class Player
     vector<pair<string, string> > m_propertyGroups;
     vector<pair<string, int> > m_propertyPrice;
     vector<string> m_monopolies;
+    PlayerStats m_stats;
 };

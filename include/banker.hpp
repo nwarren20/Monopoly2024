@@ -43,7 +43,7 @@ class Banker
 
     int GetNumActivePlayers();
 
-    //bool DoesPlayerOwnMonopoly(Player * player, string group);
+    void PrintPlayerRankings();
 
     void GivePlayOptions(Player * player);
 

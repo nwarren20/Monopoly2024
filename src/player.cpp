@@ -59,6 +59,8 @@ void Player::CardTransaction(int amount)
     {
         m_bankAccount += amount;
 
+        m_stats.cardCollected += amount;
+
         std::stringstream ss;
         ss << "You received $" << amount << "!";
 
@@ -76,6 +78,8 @@ void Player::CardTransaction(int amount)
         }
 
         m_bankAccount -= paid;
+
+        m_stats.cardPaid += paid;
 
         std::stringstream ss;
         ss << "You paid $" << paid << ".";
@@ -110,6 +114,13 @@ int Player::RollDice(int gaffRoll)
     if (m_jailRolls > 0)
     {
         m_jailRolls--;
+    }
+
+    m_stats.diceRolledCount++;
+
+    if (RolledDoubles())
+    {
+        m_stats.totalDoublesRolled++;
     }
 
     return GetRolledDiceTotal();
@@ -175,6 +186,8 @@ int Player::AdvancePlayer(int numSpaces)
 {
     m_position += numSpaces;
 
+    m_stats.spacesMoved += numSpaces;
+
     if (m_position > 39)
     {
         m_position -= 40;
@@ -193,6 +206,8 @@ void Player::PassGo()
 {
     m_bankAccount+=200;
 
+    m_stats.passedGoCount++;
+
     MonopolyUtils::OutputMessage(" YOU PASSED GO! COLLECT $200", 1000);
 }
 
@@ -200,6 +215,19 @@ void Player::MoveToSpace(int space)
 {
     if (space >= 0 && space < 40)
     {
+        int moved = 0;
+
+        if (m_position < space)
+        {
+            moved = space - m_position;
+        }
+        else
+        {
+            moved = (40 - m_position) + space;
+        }
+
+        m_stats.spacesMoved += moved;
+
         m_position = space;
     }
 }
@@ -207,7 +235,10 @@ void Player::MoveToSpace(int space)
 void Player::GoToJail()
 {
     MoveToSpace(10);
+
     m_jailRolls = 3;
+
+    m_stats.timesJailded++;
 }
 
 bool Player::GetOutOfJail(const int price)
@@ -333,6 +364,8 @@ int Player::PayTax(const int fee)
     MonopolyUtils::OutputMessage(ss.str(), 1000);
 
     m_bankAccount -= paid;
+
+    m_stats.taxesPaid += paid;
 
     return paid;
 }
@@ -479,6 +512,9 @@ int Player::PayRent(const int amount)
             }
 
             m_bankAccount -= paid;
+
+            m_stats.rentPaid += paid;
+
             finished = true;
         }
         else if (input.compare("d") == 0)
@@ -542,6 +578,8 @@ int Player::Liquidate(const int target)
 void Player::CollectRent(const int amount)
 {
     m_bankAccount += amount;
+
+    m_stats.rentCollected += amount;
 }
 
 void Player::CollectGeneric(const int amount)
@@ -1232,9 +1270,17 @@ void Player::OutputPlayerStats(vector<BoardSpace *> & board)
     PlayerCheckForMonopolies(board);
 
     cout << GetName() << " Player Stats: " << endl;
-    cout << "          Cash: $" << m_bankAccount << endl;
-    cout << "     Net Worth: $" << GetNetWorth() << endl;
-    cout << "Rent Potential: $" << GetRentPotential(board) << endl;
+    cout << "           Cash: $" << m_bankAccount << endl;
+    cout << "      Net Worth: $" << GetNetWorth() << endl;
+    cout << " Rent Potential: $" << GetRentPotential(board) << endl;
+    //cout << " Rent Collected: $" << m_stats.rentCollected << endl;
+    //cout << "      Rent Paid: $" << m_stats.rentPaid << endl;
+    //cout << "     Taxes Paid: $" << m_stats.taxesPaid << endl;
+    //cout << "Dice Roll Count: " << m_stats.diceRolledCount << endl;
+    //cout << "   Spaces Moved: " << m_stats.spacesMoved << endl;
+    //cout << " Doubles Rolled: " << m_stats.totalDoublesRolled << endl;
+    //cout << "      Passed Go: " << m_stats.passedGoCount << endl;
+    //cout << "   Times Jailed: " << m_stats.timesJailded << endl;
 
     if(HasGetOutOfJailFreeCard())
     {

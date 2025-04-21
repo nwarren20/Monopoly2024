@@ -2,7 +2,13 @@
 #include <iostream>
 #include <sstream>
 #include <list>
+#include <vector>
+#include <algorithm>
+#include <iomanip>
 #include "../include/utils.hpp"
+
+using namespace std;
+
 
 Banker::Banker()
 {
@@ -605,4 +611,48 @@ void Banker::GivePlayOptions(Player * player)
             cout << "==> Enter u to Unmortgage property." << endl;
         }
      }
+}
+
+void Banker::PrintPlayerRankings()
+{
+    vector< pair<string, int> > netWorth;
+    vector< pair<string, int> > cash;
+    vector< pair<string, int> > potentialRent;
+
+    for (auto player : m_allPlayers)
+    {
+        string name = player->GetName();
+
+        int playerNetWorth = player->GetNetWorth();
+        netWorth.push_back( make_pair(name, playerNetWorth) );
+
+        int playerCash = player->GetCash();
+        cash.push_back( make_pair(name, playerCash) );
+
+        //int potRent = player->GetRentPotential();
+    }
+
+    // Sort 
+    std::sort(netWorth.begin(), netWorth.end(), [](const auto& a, const auto& b) {
+        return a.second > b.second;
+    });
+
+    std::sort(cash.begin(), cash.end(), [](const auto& a, const auto& b) {
+        return a.second > b.second;
+    });
+
+    cout << "===================================================================\n";
+    cout << " Rankings\n";
+    cout << setw(20) << left << "  Cash:" << setw(20) << left << "  Net Worth:" << setw(20) << left << "  Potential Rent" << endl;
+    
+    for (size_t i = 0; i < m_allPlayers.size(); i++)
+    {
+        stringstream rankCash;
+        rankCash << "  " << (i + 1) << ". " << cash[i].first << " $" << cash[i].second;
+
+        stringstream rankNet;
+        rankNet << "  " << (i + 1) << ". " << netWorth[i].first << " $" << netWorth[i].second;
+
+        cout << setw(20) << left << rankCash.str() << setw(20) << left << rankNet.str() << endl;
+    }
 }

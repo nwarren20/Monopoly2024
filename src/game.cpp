@@ -48,6 +48,7 @@ int main()
         while (!turnOver)
         {
             playerThisTurn->PrintBoardPosition(gameBoard);
+            banker->PrintPlayerRankings();
 
             int position = playerThisTurn->GetPosition();
             string space = gameBoard[position]->GetName();
