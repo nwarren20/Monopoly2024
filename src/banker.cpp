@@ -613,7 +613,7 @@ void Banker::GivePlayOptions(Player * player)
      }
 }
 
-void Banker::PrintPlayerRankings()
+void Banker::PrintPlayerRankings(vector<BoardSpace *> board)
 {
     vector< pair<string, int> > netWorth;
     vector< pair<string, int> > cash;
@@ -629,7 +629,8 @@ void Banker::PrintPlayerRankings()
         int playerCash = player->GetCash();
         cash.push_back( make_pair(name, playerCash) );
 
-        //int potRent = player->GetRentPotential();
+        int potRent = player->GetRentPotential(board);
+        potentialRent.push_back( make_pair(name, potRent) );
     }
 
     // Sort 
@@ -638,6 +639,10 @@ void Banker::PrintPlayerRankings()
     });
 
     std::sort(cash.begin(), cash.end(), [](const auto& a, const auto& b) {
+        return a.second > b.second;
+    });
+
+    std::sort(potentialRent.begin(), potentialRent.end(), [](const auto& a, const auto& b) {
         return a.second > b.second;
     });
 
@@ -653,6 +658,9 @@ void Banker::PrintPlayerRankings()
         stringstream rankNet;
         rankNet << "  " << (i + 1) << ". " << netWorth[i].first << " $" << netWorth[i].second;
 
-        cout << setw(20) << left << rankCash.str() << setw(20) << left << rankNet.str() << endl;
+        stringstream rankRent;
+        rankRent << "  " << (i + 1) << ". " << potentialRent[i].first << " $" << potentialRent[i].second;
+
+        cout << setw(20) << left << rankCash.str() << setw(20) << left << rankNet.str() << setw(20) << left << rankRent.str() << endl;
     }
 }

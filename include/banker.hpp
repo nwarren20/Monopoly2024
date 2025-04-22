@@ -7,6 +7,8 @@
 
 using namespace std;
 
+class BoardSpace;
+
 class Banker
 {
   public:
@@ -43,7 +45,7 @@ class Banker
 
     int GetNumActivePlayers();
 
-    void PrintPlayerRankings();
+    void PrintPlayerRankings(vector<BoardSpace *>);
 
     void GivePlayOptions(Player * player);
 
