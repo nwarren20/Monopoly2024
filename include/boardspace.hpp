@@ -67,6 +67,8 @@ class Property : public BoardSpace
 
     void AddHouse();
 
+    void RemoveHouse();
+
     int GetHouseCount() {
       return m_houseCount;
     }

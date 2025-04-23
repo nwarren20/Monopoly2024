@@ -124,6 +124,14 @@ void Property::AddHouse()
     }
 }
 
+void Property::RemoveHouse()
+{
+    if (m_houseCount > 0)
+    {
+        m_houseCount--;
+    }
+}
+
 RailRoad::RailRoad(const string name, const int position)
   : BoardSpace(railroad, name, position)
 {

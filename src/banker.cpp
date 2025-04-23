@@ -209,9 +209,8 @@ void Banker::CollectEachPlayer(Player * player, int amount)
 
 void Banker::PayPerHouseAndHotel(Player * player, int perHotelCost, int perHouseCost)
 {
-    // TODO: get player house and hotel counts.
-    int hotelCount = 0;
-    int houseCount = 0;
+    int hotelCount = player->GetTotalHotelCount();
+    int houseCount = player->GetTotalHouseCount();
 
     int hotelTotalCost = hotelCount * perHotelCost;
     int houseTotalCost = houseCount * perHouseCost;
@@ -230,10 +229,48 @@ void Banker::PayPerHouseAndHotel(Player * player, int perHotelCost, int perHouse
         RemovePlayerFromGame(player->GetPlayerId());
     }
 
-    std::stringstream ss;
-    ss << player->GetName() << " paid a total of $" << paid << " for all houses and hotels";
+    if (paid > 0)
+    {
+        std::stringstream ss;
+        ss << player->GetName() << " paid a total of $" << paid << " for ";
 
-    MonopolyUtils::OutputMessage(ss.str(), 1000);
+        if (houseCount == 1)
+        {
+            ss << "1 house";
+        }
+        else if (houseCount > 1)
+        {
+            ss << houseCount << " houses";
+        }
+        
+        if (hotelCount > 0)
+        {
+            if (houseCount > 0)
+            {
+                ss << " and ";
+            }
+
+            if (hotelCount == 1)
+            {
+                ss << "1 Hotel";
+            }
+            else
+            {
+                ss << hotelCount << " Hotels";
+            }
+        }
+
+        ss << ".";
+
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
+    }
+    else
+    {
+        stringstream ss;
+        ss << "You do not have houses or hotels so you are not charged.";
+
+        MonopolyUtils::OutputMessage(ss.str(), 1000);
+    }
 }
 
 void Banker::UtilityTransaction(const int customerId, const int ownerId, const int diceRoll, const bool bothUtilitiesOwned, const bool chance, bool mortgaged)
@@ -586,29 +623,34 @@ void Banker::GivePlayOptions(Player * player)
                 
         MonopolyUtils::OutputMessage(message, 0);
 
-        cout << "==> Enter p to pay $50 to get out of jail." << endl;
+        cout << "==> Enter 'p' to pay $50 to get out of jail." << endl;
 
         if (player->HasGetOutOfJailFreeCard())
         {
-            cout << "==> Enter f to use Get Out of Jail Free Card." << endl;
+            cout << "==> Enter 'f' to use Get Out of Jail Free Card." << endl;
         }
      }
 
-    cout << "==> Enter r to roll dice." << endl;
-    cout << "==> Enter t to trade." << endl;
+    cout << "==> Enter 'r' to ROLL dice." << endl;
+    cout << "==> Enter 't' to TRADE." << endl;
 
     if (player->OwnsProperty())
     {
-        cout << "==> Enter m to Mortgage property." << endl;
-
-        if (player->OwnsMonopoly())
-        {
-            cout << "==> Enter b to buy houses/hotels." << endl;
-        }
+        cout << "==> Enter 'm' to MORTGAGE property." << endl;
 
         if (player->HasMortgagedProperty())
         {
-            cout << "==> Enter u to Unmortgage property." << endl;
+            cout << "==> Enter 'u' to UNMORTGAGE property." << endl;
+        }
+
+        if (player->OwnsMonopoly())
+        {
+            cout << "==> Enter 'b' to BUY houses/hotels." << endl;
+        }
+
+        if (player->OwnsHouseOrHotel())
+        {
+            cout << "==> Enter 's' to SELL houses/hotels." << endl;
         }
      }
 }
@@ -619,9 +661,17 @@ void Banker::PrintPlayerRankings(vector<BoardSpace *> board)
     vector< pair<string, int> > cash;
     vector< pair<string, int> > potentialRent;
 
+    size_t longestName = 0;
+
     for (auto player : m_allPlayers)
     {
         string name = player->GetName();
+        size_t length = name.length();
+
+        if (length > longestName)
+        {
+            longestName = length;
+        }
 
         int playerNetWorth = player->GetNetWorth();
         netWorth.push_back( make_pair(name, playerNetWorth) );
@@ -646,9 +696,11 @@ void Banker::PrintPlayerRankings(vector<BoardSpace *> board)
         return a.second > b.second;
     });
 
+    const int width = (int)(longestName + 12);
+
     cout << "===================================================================\n";
     cout << " Rankings\n";
-    cout << setw(20) << left << "  Cash:" << setw(20) << left << "  Net Worth:" << setw(20) << left << "  Potential Rent" << endl;
+    cout << setw(width) << left << "  Cash:" << setw(width) << left << "  Net Worth:" << setw(width) << left << "  Potential Rent" << endl;
     
     for (size_t i = 0; i < m_allPlayers.size(); i++)
     {
@@ -661,6 +713,6 @@ void Banker::PrintPlayerRankings(vector<BoardSpace *> board)
         stringstream rankRent;
         rankRent << "  " << (i + 1) << ". " << potentialRent[i].first << " $" << potentialRent[i].second;
 
-        cout << setw(20) << left << rankCash.str() << setw(20) << left << rankNet.str() << setw(20) << left << rankRent.str() << endl;
+        cout << setw(width) << left << rankCash.str() << setw(width) << left << rankNet.str() << setw(width) << left << rankRent.str() << endl;
     }
 }

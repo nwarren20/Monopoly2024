@@ -129,7 +129,7 @@ int main()
                 }
                 else
                 {
-                    MonopolyUtils::OutputMessage("must own property to mortgage", 0);
+                    MonopolyUtils::OutputMessage("must own property to mortgage", 1000);
                 }
             }
             else if (input.compare("u") == 0)
@@ -140,23 +140,41 @@ int main()
                 }
                 else
                 {
-                    MonopolyUtils::OutputMessage("no property you own is mortgaged", 0);
+                    MonopolyUtils::OutputMessage("no property you own is mortgaged", 1000);
                 }
             }
             else if (input.compare("b") == 0)
             {
                 if (playerThisTurn->OwnsMonopoly())
                 {
-                    playerThisTurn->BuyHousesAndHotels(gameBoard);
+                    playerThisTurn->BuyHouseMenu(gameBoard);
                 }
                 else
                 {
-                    MonopolyUtils::OutputMessage("must own monopoly to buy houses/hotels!", 0);
+                    MonopolyUtils::OutputMessage("must own monopoly to buy houses/hotels!", 1000);
                 }
             }
-            else if (playerThisTurn->IsJailed() && input.compare("p") == 0)
+            else if (input.compare("s") == 0)
             {
-                playerThisTurn->GetOutOfJail(50);
+                if (playerThisTurn->OwnsHouseOrHotel())
+                {
+                    playerThisTurn->SellHouseMenu(gameBoard);
+                }
+                else
+                {
+                    MonopolyUtils::OutputMessage("must own houses/hotels to sell!", 1000);
+                }
+            }
+            else if (input.compare("p") == 0)
+            {
+                if (playerThisTurn->IsJailed())
+                {
+                    playerThisTurn->GetOutOfJail(50);
+                }
+                else
+                {
+                    MonopolyUtils::OutputMessage("not in Jail!", 1000);
+                }
             }
             else if (input.compare("g") == 0)
             {
