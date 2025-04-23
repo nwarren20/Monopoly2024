@@ -50,8 +50,8 @@ bool Property::HandlePlayerVisit(Player * player)
 
         MonopolyUtils::OutputMessage(ss.str(), 0);
 
-        string buy;
-        cin >> buy;
+        vector<string> options = { "y", "n" };
+        string buy = MonopolyUtils::GetValidInput("", options);
 
         if (buy.compare("y") == 0)
         {
@@ -153,8 +153,8 @@ bool RailRoad::HandlePlayerVisit(Player * player)
 
         MonopolyUtils::OutputMessage(ss.str(), 0);
 
-        string buy;
-        cin >> buy;
+        vector<string> options = { "y", "n" };
+        string buy = MonopolyUtils::GetValidInput("", options);
 
         if (buy.compare("y") == 0)
         {
@@ -243,8 +243,8 @@ bool Utility::HandlePlayerVisit(Player * player)
 
         MonopolyUtils::OutputMessage(ss.str(), 0);
 
-        string buy;
-        cin >> buy;
+        vector<string> options = { "y", "n" };
+        string buy = MonopolyUtils::GetValidInput("", options);
 
         if (buy.compare("y") == 0)
         {

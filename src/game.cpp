@@ -57,10 +57,10 @@ int main()
             cout << playerThisTurn->GetName() << " is currently on " << space << endl;
             playerThisTurn->OutputPlayerStats(gameBoard);
 
-            banker->GivePlayOptions(playerThisTurn);
+            vector<string> options = banker->GivePlayOptions(playerThisTurn);
 
-            string input;
-            cin >> input;
+            options.push_back("g");
+            string input = MonopolyUtils::GetValidInput("", options);
 
             if (input.compare("r") == 0)
             {
@@ -147,7 +147,7 @@ int main()
             {
                 if (playerThisTurn->OwnsMonopoly())
                 {
-                    playerThisTurn->BuyHouseMenu(gameBoard);
+                    banker->PlayerBuyHouseRequest(playerThisTurn, gameBoard);
                 }
                 else
                 {
@@ -158,7 +158,7 @@ int main()
             {
                 if (playerThisTurn->OwnsHouseOrHotel())
                 {
-                    playerThisTurn->SellHouseMenu(gameBoard);
+                    playerThisTurn->SellHouseMenu();
                 }
                 else
                 {
@@ -178,16 +178,7 @@ int main()
             }
             else if (input.compare("g") == 0)
             {
-                bool validRoll = false;
-                int roll = 0;
-
-                while (!validRoll)
-                {
-                    cout << "Enter Roll 2-12" << endl;
-                    cin >> roll;
-
-                    validRoll = (roll >=2 && roll <= 12);
-                }
+                int roll = MonopolyUtils::GetValidInput(0, 2, 12);
                 
                 gaffDice = roll;
             }
@@ -195,6 +186,8 @@ int main()
             {
                 MonopolyUtils::OutputMessage(string("Invalid Entry: " + input), 0);
             }
+
+            banker->GetReturnedHouses(playerThisTurn, gameBoard);
         }
 
         playerThisTurn->OutputPlayerStats(gameBoard);
@@ -204,8 +197,9 @@ int main()
         while (!validInput)
         {
             cout << "Your turn is finished, enter 'f'                                                      enter 'q' to quit game" << endl;
-            string done;
-            cin >> done;
+
+            vector<string> options = { "f", "q" };
+            string done = MonopolyUtils::GetValidInput("", options);
 
             if (done.compare("f") == 0)
             {

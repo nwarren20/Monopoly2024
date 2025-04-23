@@ -13,6 +13,10 @@ using namespace std;
 Banker::Banker()
 {
     m_availableTokens = { "!", "@", "#", "$", "%", "^", "&", "*" };
+
+    m_currentHouseInventory = Houses::MAX_HOUSE_INVENTORY;
+
+    m_currentHotelInventory = Houses::MAX_HOTEL_INVENTORY;
 }
 
 Banker::~Banker()
@@ -287,13 +291,8 @@ void Banker::UtilityTransaction(const int customerId, const int ownerId, const i
 
     if (chance)
     {
-        string input = string("");
-
-        while(input.compare("r") != 0)
-        {
-            MonopolyUtils::OutputMessage("enter 'r' to roll dice for billed amount", 0);
-            cin >> input;
-        }
+        vector<string> options = { "r" };
+        string input = MonopolyUtils::GetValidInput("", options);
         
         int diceTotal = customer->RollDice();
         bill = diceTotal * 10;
@@ -597,8 +596,27 @@ string Banker::GetPlayerInitial(const int playerId)
     return initial;
 }
 
-void Banker::GivePlayOptions(Player * player)
+void Banker::GetReturnedHouses(Player * player, vector<BoardSpace *> board)
 {
+    m_currentHouseInventory += player->ReturnHouseInventory(board);
+}
+
+void Banker::PlayerBuyHouseRequest(Player * player, vector<BoardSpace *> board)
+{
+    if (m_currentHotelInventory > 0 && m_currentHouseInventory > 0)
+    {
+        player->BuyHouseMenu(board, m_currentHouseInventory, m_currentHotelInventory);
+    }
+    else
+    {
+        MonopolyUtils::OutputMessage("No more houses or hotels to buy!", 1000);
+    }
+}
+
+vector<string> Banker::GivePlayOptions(Player * player)
+{
+    vector<string> options = { "r", "t" };
+
     if (player->IsJailed())
     {
         string message = string("You're currently serving time, pay $50 to get out, or roll doubles");
@@ -628,7 +646,11 @@ void Banker::GivePlayOptions(Player * player)
         if (player->HasGetOutOfJailFreeCard())
         {
             cout << "==> Enter 'f' to use Get Out of Jail Free Card." << endl;
+
+            options.push_back("f");
         }
+
+        options.push_back("p");
      }
 
     cout << "==> Enter 'r' to ROLL dice." << endl;
@@ -638,21 +660,31 @@ void Banker::GivePlayOptions(Player * player)
     {
         cout << "==> Enter 'm' to MORTGAGE property." << endl;
 
+        options.push_back("m");
+
         if (player->HasMortgagedProperty())
         {
             cout << "==> Enter 'u' to UNMORTGAGE property." << endl;
+
+            options.push_back("u");
         }
 
         if (player->OwnsMonopoly())
         {
             cout << "==> Enter 'b' to BUY houses/hotels." << endl;
+
+            options.push_back("b");
         }
 
         if (player->OwnsHouseOrHotel())
         {
             cout << "==> Enter 's' to SELL houses/hotels." << endl;
+
+            options.push_back("s");
         }
      }
+
+     return options;
 }
 
 void Banker::PrintPlayerRankings(vector<BoardSpace *> board)
@@ -715,4 +747,6 @@ void Banker::PrintPlayerRankings(vector<BoardSpace *> board)
 
         cout << setw(width) << left << rankCash.str() << setw(width) << left << rankNet.str() << setw(width) << left << rankRent.str() << endl;
     }
+
+    std::cout << " *** Inventory: " << m_currentHouseInventory << " Houses, and " << m_currentHotelInventory << " Hotels." << endl;
 }

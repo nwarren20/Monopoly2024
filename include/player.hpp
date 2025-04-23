@@ -125,15 +125,17 @@ class Player
 
     void AddMonopoly(string group);
 
-    void BuyHouseMenu(vector<BoardSpace *> & board);
+    void BuyHouseMenu(vector<BoardSpace *> & board, int & houseInventory, int & hotelInventory);
 
-    void SellHouseMenu(vector<BoardSpace *> & board);
+    void SellHouseMenu();
 
     void AddHousesToGroup(vector<BoardSpace *> & board, string group, int numHouses);
 
-    void RemoveHousesFromGroup(vector<BoardSpace *> & board, string group, int numHouses);
+    void RemoveHousesFromGroup(string group, int numHouses);
 
     int GetHouseCountForGroup(vector<BoardSpace *> & board, const string colorGroup);
+
+    int GetHouseCountForGroup(const string colorGroup);
 
     bool BuyHouses(const int count, const int price);
 
@@ -141,17 +143,23 @@ class Player
 
     bool DoesColorGroupHaveAMortgage(string colorGroup);
 
+    bool DoesColorGroupHaveImprovements(string colorGroup);
+
+    bool DoesPropertyInColorGroupHaveImprovements(string propertyName);
+
     void UpdateNameInPropertyLists(string targetName, int houseCount);
 
     string UpdatePropertyName(string name, string target, int houseCount);
 
-    bool DoesProperyInListHaveHouse(string propertyName);
+    string GetRawPropertyName(string name);
 
     int GetHouseCountForPropery(string propertyName);
 
     int GetTotalHouseCount();
 
     int GetTotalHotelCount();
+
+    int ReturnHouseInventory(vector<BoardSpace *> & board);
 
     bool OwnsHouseOrHotel() {
         return (GetTotalHouseCount() > 0 || GetTotalHotelCount() > 0);

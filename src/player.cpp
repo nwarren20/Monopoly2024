@@ -460,20 +460,16 @@ void Player::MortgageToBuyProperty(const int price)
 
         if (OwnsProperty() == true)
         {
-            string input = "";
+            vector<string> options = { "y", "n" };
+            string input = MonopolyUtils::GetValidInput("", options);
 
-            while (input.compare("y") != 0 && input.compare("n") != 0)
+            if (input.compare("y"))
             {
-                cin >> input;
-
-                if (input.compare("y") == 0)
-                {
-                    MortgageMenu();
-                }
-                else
-                {
-                    done = true;
-                }
+                MortgageMenu();
+            }
+            else
+            {
+                done = true;
             }
         }
         else
@@ -493,8 +489,8 @@ int Player::PayRent(const int amount)
         cout << "Enter 'p' to pay rent\n"
              << "Enter 'd' to make deal\n";
 
-        string input;
-        cin >> input;
+        vector<string> options = { "p", "d" };
+        string input = MonopolyUtils::GetValidInput("", options);
 
         if (input.compare("p") == 0)
         {
@@ -574,15 +570,8 @@ int Player::Liquidate(const int target)
 
         MonopolyUtils::OutputMessage(ss.str(), 1000);
 
-        string input = "";
-        cin >> input;
-
-        while (input.compare("m") != 0 && input.compare("s") != 0)
-        {
-            input = "";
-            cout << "Invalid input\n";
-            cin >> input;
-        }
+        vector<string> options = { "m", "s" };
+        string input = MonopolyUtils::GetValidInput("", options);
 
         if (input.compare("m") == 0)
         {
@@ -602,7 +591,7 @@ int Player::Liquidate(const int target)
         {
             if (OwnsHouseOrHotel())
             {
-                //SellHouseMenu();
+                SellHouseMenu();
             }
             else
             {
@@ -642,10 +631,13 @@ void Player::MortgageMenu()
 
     for (auto property : m_propertyPrice)
     {
-        if (IsPropertyMortgaged(property.first) == false && DoesProperyInListHaveHouse(property.first) == false)
+        string propertyName = property.first;
+
+        if (IsPropertyMortgaged(propertyName) == false &&
+            DoesPropertyInColorGroupHaveImprovements(propertyName) == false)
         {
             int mortgageValue = property.second / 2;
-            eligibleForMortgage.push_back( make_pair(property.first, mortgageValue) );
+            eligibleForMortgage.push_back( make_pair(propertyName, mortgageValue) );
         }
     }
 
@@ -667,17 +659,7 @@ void Player::MortgageMenu()
 
     cout << "  " << index << ". to exit" << endl;
 
-    int input = 0;
-    cin >> input;
-
-    while(input < 1 || input > index)
-    {
-        input = 0;
-
-        cout << " invalid entry" << endl;
-
-        cin >> input;
-    }
+    int input = MonopolyUtils::GetValidInput(0, 1, index);
 
     if (input != index && input > 0 && input <= (int)eligibleForMortgage.size())
     {
@@ -685,14 +667,8 @@ void Player::MortgageMenu()
 
         cout << " You chose to mortage " << eligibleForMortgage[index].first << "for $" << eligibleForMortgage[index].second << " ? (y/n)" << endl;
 
-        string inputStr = "";
-        cin >> inputStr;
-
-        while (inputStr.compare("y") != 0 && inputStr.compare("n") != 0)
-        {
-            cout << "invalid entry" << endl;
-            cin >> inputStr;
-        }
+        vector<string> options = { "y", "n" };
+        string inputStr = MonopolyUtils::GetValidInput("", options);
 
         if (inputStr.compare("y") == 0)
         {
@@ -802,17 +778,7 @@ void Player::UnMortgageMenu()
 
     cout << "  " << index << ". to exit" << endl;
 
-    int input = 0;
-    cin >> input;
-
-    while(input < 1 || input > index)
-    {
-        input = 0;
-
-        cout << " invalid entry" << endl;
-
-        cin >> input;
-    }
+    int input = MonopolyUtils::GetValidInput(0, 1, index);
 
     if (input != index && input > 0 && input <= (int)eligibleForUnMortgage.size())
     {
@@ -820,14 +786,8 @@ void Player::UnMortgageMenu()
 
         cout << " You chose to unmortage " << eligibleForUnMortgage[index].first << "for a cost $" << eligibleForUnMortgage[index].second << " ? (y/n)" << endl;
 
-        string inputStr = "";
-        cin >> inputStr;
-
-        while (inputStr.compare("y") != 0 && inputStr.compare("n") != 0)
-        {
-            cout << "invalid entry" << endl;
-            cin >> inputStr;
-        }
+        vector<string> options = { "y", "n" };
+        string inputStr = MonopolyUtils::GetValidInput("", options);
 
         if (inputStr.compare("y") == 0)
         {
@@ -895,6 +855,19 @@ int Player::GetNetWorth()
         {
             assets += (property.second / 2);
         }
+    }
+
+    vector< pair<string, int> > colorGroupWithHouses;
+
+    for (auto group : m_monopolies)
+    {
+        int currentHouseCount = GetHouseCountForGroup(group);
+
+        int pricePerHouse = (Houses::GetHousePriceForGroup(group) / 2);
+
+        int total = currentHouseCount * pricePerHouse;
+
+        assets += total;
     }
 
     int netWorth = m_bankAccount + assets;
@@ -970,7 +943,22 @@ int Player::GetHouseCountForGroup(vector<BoardSpace *> & board, const string col
     return houseCount;
 }
 
-void Player::BuyHouseMenu(vector<BoardSpace *> & board)
+int Player::GetHouseCountForGroup(const string colorGroup)
+{
+    int count = 0;
+
+    for (auto group : m_propertyGroups)
+    {
+        if (group.second.compare(colorGroup) == 0)
+        {
+            count += GetHouseCountForPropery(group.first);
+        }
+    }
+
+    return count;
+}
+
+void Player::BuyHouseMenu(vector<BoardSpace *> & board, int & houseInventory, int & hotelInventory)
 {
     PlayerCheckForMonopolies(board);
 
@@ -1004,6 +992,7 @@ void Player::BuyHouseMenu(vector<BoardSpace *> & board)
 
     cout << "===================================================================\n";
     cout << " House/Hotel Menu\n";
+    cout << " There are " << houseInventory << " houses and " << hotelInventory << " hotels available to buy." << endl;
     cout << "  Select property group to buy houses/hotels.\n";
 
     for (auto group : upgradable)
@@ -1013,15 +1002,7 @@ void Player::BuyHouseMenu(vector<BoardSpace *> & board)
 
     cout << "  " << index << ". to exit" << endl;
 
-    int input = 0;
-    cin >> input;
-
-    while(input < 1 || input > index)
-    {
-        input = 0;
-        cout << " invalid entry" << endl;
-        cin >> input;
-    }
+    int input = MonopolyUtils::GetValidInput(0, 1, index);
 
     if (input != index && input > 0 && input <= (int)upgradable.size())
     {
@@ -1032,14 +1013,8 @@ void Player::BuyHouseMenu(vector<BoardSpace *> & board)
 
         cout << " You chose to buy houses for " << groupName << " ? (y/n)" << endl;
 
-        string inputStr = "";
-        cin >> inputStr;
-
-        while (inputStr.compare("y") != 0 && inputStr.compare("n") != 0)
-        {
-            cout << "invalid entry" << endl;
-            cin >> inputStr;
-        }
+        vector<string> options = { "y", "n" };
+        string inputStr = MonopolyUtils::GetValidInput("", options);
 
         if (inputStr.compare("y") == 0)
         {
@@ -1059,18 +1034,15 @@ void Player::BuyHouseMenu(vector<BoardSpace *> & board)
 
             int maxToBuy = (maxHouseCount - currentHouseCount);
 
+            if (maxToBuy > houseInventory)
+            {
+                maxToBuy = houseInventory;
+            }
+
             cout << "You can buy a maximum of " << maxToBuy << "\nEach House cost $" << price << "\nHow many houses do you want to buy?";
 
-            int count = 0;
-            cin >> count;
+            int count = MonopolyUtils::GetValidInput(-1, 0, maxToBuy);
 
-            while(count < 0 || count > maxToBuy)
-            {
-                cout << "Invalid Entry\n";
-                count = 0;
-                cin >> count;
-            }
-    
             if (count == 0)
             {
                 MonopolyUtils::OutputMessage("You choose to not build any houses", 1000);
@@ -1082,16 +1054,17 @@ void Player::BuyHouseMenu(vector<BoardSpace *> & board)
                 if(success)
                 {
                     AddHousesToGroup(board, groupName, count);
+
+                    houseInventory -= count;
                 }
             }
         }
     }
 }
 
-void Player::SellHouseMenu(vector<BoardSpace *> & board)
+void Player::SellHouseMenu()
 {
-    PlayerCheckForMonopolies(board);
-
+    // validate monopolies
     if (m_monopolies.size() == 0)
     {
         stringstream ss;
@@ -1102,11 +1075,12 @@ void Player::SellHouseMenu(vector<BoardSpace *> & board)
         return;
     }
 
+    // Get groups with houses.
     vector< pair<string, int> > colorGroupWithHouses;
 
     for (auto group : m_monopolies)
     {
-        int currentHouseCount = GetHouseCountForGroup(board, group);
+        int currentHouseCount = GetHouseCountForGroup(group);
 
         int pricePerHouse = (Houses::GetHousePriceForGroup(group) / 2);
 
@@ -1116,6 +1090,7 @@ void Player::SellHouseMenu(vector<BoardSpace *> & board)
         }
     }
 
+    // Select color group houses to sell
     cout << "===================================================================\n";
     cout << " Sell House Menu\n";
     cout << "  Select color group to sell houses\n";
@@ -1134,16 +1109,9 @@ void Player::SellHouseMenu(vector<BoardSpace *> & board)
 
     cout << "  " << index << ". to exit" << endl;
 
-    int input = 0;
-    cin >> input;
+    int input = MonopolyUtils::GetValidInput(0, 1, index);
 
-    while(input < 1 || input > index)
-    {
-        input = 0;
-        cout << " invalid entry" << endl;
-        cin >> input;
-    }
-
+    // Select number of houses to sell for group
     if (input != index && input > 0 && input <= (int)colorGroupWithHouses.size())
     {
         index = input - 1;
@@ -1153,30 +1121,16 @@ void Player::SellHouseMenu(vector<BoardSpace *> & board)
 
         cout << " You chose to sell houses for " << groupName << " ? (y/n)" << endl;
 
-        string inputStr = "";
-        cin >> inputStr;
-
-        while (inputStr.compare("y") != 0 && inputStr.compare("n") != 0)
-        {
-            cout << "invalid entry" << endl;
-            cin >> inputStr;
-        }
+        vector<string> options;
+        string inputStr = MonopolyUtils::GetValidInput("", options);
 
         if (inputStr.compare("y") == 0)
         {
-            int maxToSell = GetHouseCountForGroup(board, groupName);
+            int maxToSell = GetHouseCountForGroup(groupName);
 
             cout << "You can sell a maximum of " << maxToSell << "\nEach House cost $" << price << "\nHow many houses do you want to sell?";
 
-            int count = 0;
-            cin >> count;
-
-            while(count < 0 || count > maxToSell)
-            {
-                cout << "Invalid Entry\n";
-                count = 0;
-                cin >> count;
-            }
+            int count = MonopolyUtils::GetValidInput(-1, 0, maxToSell);
     
             if (count == 0)
             {
@@ -1188,13 +1142,11 @@ void Player::SellHouseMenu(vector<BoardSpace *> & board)
 
                 if(success)
                 {
-                    RemoveHousesFromGroup(board, groupName, count);
+                    RemoveHousesFromGroup(groupName, count);
                 }
             }
         }
     }
-
-
 }
 
 bool Player::DoesColorGroupHaveAMortgage(string colorGroup)
@@ -1212,6 +1164,24 @@ bool Player::DoesColorGroupHaveAMortgage(string colorGroup)
     return mortgaged;
 }
 
+bool Player::DoesColorGroupHaveImprovements(string colorGroup)
+{
+    return GetHouseCountForGroup(colorGroup) > 0;
+}
+
+bool Player::DoesPropertyInColorGroupHaveImprovements(string propertyName)
+{
+    for (auto group : m_propertyGroups)
+    {
+        if (group.first.compare(propertyName))
+        {
+            return DoesColorGroupHaveImprovements(group.second);
+        }
+    }
+
+    return false;
+}
+
 bool Player::BuyHouses(const int count, const int price)
 {
     int totalCost = price * count;
@@ -1223,14 +1193,8 @@ bool Player::BuyHouses(const int count, const int price)
 
         MonopolyUtils::OutputMessage(ss.str(), 0);
 
-        string input = "";
-        cin >> input;
-
-        while(input.compare("y") != 0 && input.compare("n") != 0)
-        {
-            cout << "invalid entry\n";
-            cin >> input;
-        }
+        vector<string> options = { "y", "n" };
+        string input = MonopolyUtils::GetValidInput("", options);
 
         if (input.compare("y") == 0)
         {
@@ -1262,14 +1226,8 @@ bool Player::SellHouses(const int count, const int price)
 
     MonopolyUtils::OutputMessage(ss.str(), 0);
 
-    string input = "";
-    cin >> input;
-
-    while(input.compare("y") != 0 && input.compare("n") != 0)
-    {
-        cout << "invalid entry\n";
-        cin >> input;
-    }
+    vector<string> options = { "y", "n" };
+    string input = MonopolyUtils::GetValidInput("", options);
 
     if (input.compare("y") == 0)
     {
@@ -1340,29 +1298,19 @@ void Player::AddHousesToGroup(vector<BoardSpace *> & board, string group, int ho
     MonopolyUtils::OutputMessage(ss.str(), 1000);
 }
 
-void Player::RemoveHousesFromGroup(vector<BoardSpace *> & board, string group, int housesToSell)
+void Player::RemoveHousesFromGroup(string group, int housesToSell)
 {
-    vector<BoardSpace *> propertyGroup;
+    vector<string> propertyGroup;
 
-    for (auto & space : board)
+    for (auto group : m_propertyGroups)
     {
-        if (space->GetType() == BoardSpaceType::property)
+        if (group.second.compare(group.second) == 0)
         {
-            int owner = reinterpret_cast<Property *>(space)->GetOwner();
-            bool monopoly = reinterpret_cast<Property *>(space)->DoesOwnerHaveMonopoly();
-            string colorGroup = reinterpret_cast<Property *>(space)->GetGroupName();
-
-            bool correctOwner = (owner == GetPlayerId());
-            bool correctGroup = (colorGroup.compare(group) == 0);
-            
-            if (monopoly && correctGroup && correctOwner)
-            {
-                propertyGroup.push_back(space);
-            }
+            propertyGroup.push_back(group.first);
         }
     }
 
-    int currentHouseCount = GetHouseCountForGroup(board, group);
+    int currentHouseCount = GetHouseCountForGroup(group);
     int newHouseCount = currentHouseCount - housesToSell;
     int propertyIndex = 0;
 
@@ -1374,10 +1322,14 @@ void Player::RemoveHousesFromGroup(vector<BoardSpace *> & board, string group, i
         }
         else
         {
-            reinterpret_cast<Property *>(propertyGroup[propertyIndex])->RemoveHouse();
+            const string name = propertyGroup[propertyIndex];
 
-            string name = propertyGroup[propertyIndex]->GetName();
-            int houseCount = reinterpret_cast<Property *>(propertyGroup[propertyIndex])->GetHouseCount();
+            int houseCount = GetHouseCountForPropery(name);
+
+            if (houseCount > 0)
+            {
+                houseCount--;
+            }
 
             UpdateNameInPropertyLists(name, houseCount);
         }
@@ -1432,27 +1384,11 @@ string Player::UpdatePropertyName(string name, string target, int houseCount)
 {
     string updatedName = name;
 
-    if (name.compare(target) == 0)
+    string rawName = GetRawPropertyName(name);
+
+    if (name.compare(target) == 0 || rawName.compare(target) == 0)
     {
-        updatedName = AddedHouseCountText(name, houseCount);
-    }
-     else
-    {
-        size_t found = name.find(target);
-
-        if (found != string::npos)
-        {
-            size_t endPar = name.find(")");
-
-            if (endPar != string::npos)
-            {
-                size_t start = endPar + 1;
-
-                string nameNoParanth = name.substr(start);
-
-                updatedName = AddedHouseCountText(nameNoParanth, houseCount);
-            }
-        }
+        updatedName = AddedHouseCountText(rawName, houseCount);
     }
 
     return updatedName;
@@ -1499,38 +1435,6 @@ int Player::GetHouseCountForPropery(string propertyName)
     }
 
     return 0;
-}
-
-bool Player::DoesProperyInListHaveHouse(string propertyName)
-{
-    for (auto propGroup : m_propertyGroups)
-    {
-        size_t endPos = propertyName.find(propertyName);
-
-        if (endPos != string::npos)
-        {
-            size_t endPar = propertyName.find(")");
-
-            if (endPar != string::npos)
-            {
-                size_t length = endPar + 1;
-
-                string paranth = propertyName.substr(0, length);
-
-                if (paranth.compare("(1 house)") == 0 ||
-                    paranth.compare("(2 houses)") == 0 ||
-                    paranth.compare("(3 houses)") == 0 ||
-                    paranth.compare("(4 houses)") == 0 ||
-                    paranth.compare("(Hotel)") == 0)
-
-                {
-                    return true;
-                }
-            }
-        }
-    }
-
-    return false;
 }
 
 int Player::GetTotalHouseCount()
@@ -1595,6 +1499,59 @@ int Player::GetTotalHotelCount()
     }
 
     return count;
+}
+
+int Player::ReturnHouseInventory(vector<BoardSpace *> & board)
+{
+    int returnedHouseCount = 0;
+
+    for (auto propGroup : m_propertyGroups)
+    {
+        string propertyName = propGroup.first;
+
+        string rawPropertyName = GetRawPropertyName(propertyName);
+
+        int newHouseCount = GetHouseCountForPropery(propertyName);
+        int oldHouseCount = 0;
+        
+        for (auto space : board)
+        {
+            if (space->GetType() == BoardSpaceType::property)
+            {
+                if (space->GetName().compare(rawPropertyName) == 0)
+                {     
+                    oldHouseCount = reinterpret_cast<Property *>(space)->GetHouseCount();
+
+                    while (oldHouseCount > newHouseCount)
+                    {
+                        returnedHouseCount++;
+
+                        reinterpret_cast<Property *>(space)->RemoveHouse();
+
+                        oldHouseCount = reinterpret_cast<Property *>(space)->GetHouseCount();
+                    }
+
+                    break;
+                }
+            }
+        }
+    }
+
+    return returnedHouseCount;
+}
+
+string Player::GetRawPropertyName(string name)
+{
+    size_t endPar = name.find(")");
+
+    if (endPar != string::npos)
+    {
+        size_t start = endPar + 1;
+
+        return name.substr(start);
+    }
+
+    return name;
 }
 
 void Player::PlayerCheckForMonopolies(vector<BoardSpace *> & board)
@@ -1836,7 +1793,6 @@ void Player::PrintBoardPosition(vector<BoardSpace *> & board)
     
     int drawIndex = 0;
 
-    cout << endl;
     cout << "___________________________________________________________________" << endl
          << "|Free |Kntk" << DrawHouse(board[21], "y") << "|  ?  | Ind" << DrawHouse(board[23], " ") << "| ILL" << DrawHouse(board[24], " ") 
          << "| RR  | Atl" << DrawHouse(board[26], " ") << "| Ven" << DrawHouse(board[27], "t") << "| WW  |MarG" << DrawHouse(board[29], "r") << "| Jail|" << endl << "|";

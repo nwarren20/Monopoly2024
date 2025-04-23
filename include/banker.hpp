@@ -47,7 +47,7 @@ class Banker
 
     void PrintPlayerRankings(vector<BoardSpace *>);
 
-    void GivePlayOptions(Player * player);
+    vector<string> GivePlayOptions(Player * player);
 
     void PayEachPlayer(Player * player, int amount);
 
@@ -58,6 +58,10 @@ class Banker
     map<string, int> GetPlayerPositions();
 
     bool IsPropertyMortgaged(string properyName, int ownerId);
+
+    void GetReturnedHouses(Player * player, vector<BoardSpace *> board);
+
+    void PlayerBuyHouseRequest(Player * player, vector<BoardSpace *> board);
 
   private:
 
@@ -70,4 +74,8 @@ class Banker
     vector<int> m_activePlayers;
 
     list<string> m_availableTokens;
+
+    int m_currentHouseInventory;
+
+    int m_currentHotelInventory;
 };

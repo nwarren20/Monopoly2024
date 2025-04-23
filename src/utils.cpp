@@ -52,6 +52,55 @@ namespace Houses
         std::this_thread::sleep_for(std::chrono::milliseconds(delay));
     }
 
+    int MonopolyUtils::GetValidInput(const int init, const int min, const int max)
+    {
+        int input = init;
+        cin >> input;
+
+        while(input < min || input > max)
+        {
+            input = init;
+            cout << " invalid entry" << endl;
+            cin >> input;
+        }
+
+        return input;
+    }
+
+
+    string MonopolyUtils::GetValidInput(const string init, vector<string> options)
+    {
+        string inputStr = "";
+        cin >> inputStr;
+
+        bool valid = false;
+
+        for (auto option : options)
+        {
+            if (option.compare(inputStr) == 0)
+            {
+                valid = true;
+            }
+        }
+
+        while (valid == false)
+        {
+            inputStr = "";
+            cout << "invalid entry" << endl;
+            cin >> inputStr;
+
+            for (auto option : options)
+            {
+                if (option.compare(inputStr) == 0)
+                {
+                    valid = true;
+                }
+            }
+        }
+
+        return inputStr;
+    }
+
     void MonopolyUtils::CreateDarkPurpleGroup(vector<Property *> & group)
     {
         Property * Mediteranean = new Property("Mediteranean Avenue", 1, "DarkPurple", 60, Rents::meditereanRents);
